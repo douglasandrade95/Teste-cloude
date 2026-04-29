@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrossel Fast Color TRUSS - Editável</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --cor-primaria: #000000;
+            --cor-secundaria: #FFFFFF;
+            --cor-texto: #1a1a1a;
+            --cor-fundo: #f5f5f5;
+            --cor-acentos: #808080;
+            --fonte-principal: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --fonte-titulo: 'Georgia', serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--fonte-principal);
+            background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .toolbar {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .toolbar h2 {
+            color: var(--cor-primaria);
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .toolbar-section {
+            margin-bottom: 15px;
+        }
+
+        .toolbar-section h3 {
+            color: var(--cor-acentos);
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .config-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .config-item label {
+            font-size: 12px;
+            color: var(--cor-acentos);
+            font-weight: 600;
+        }
+
+        .config-item input[type="color"],
+        .config-item input[type="text"],
+        .config-item select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: var(--fonte-principal);
+            cursor: pointer;
+        }
+
+        .config-item input[type="text"] {
+            font-size: 12px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-pdf {
+            background: var(--cor-primaria);
+            color: var(--cor-secundaria);
+        }
+
+        .btn-pdf:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-view {
+            background: var(--cor-fundo);
+            color: var(--cor-texto);
+        }
+
+        .btn-view:hover {
+            background: var(--cor-acentos);
+            color: white;
+        }
+
+        .carousel-container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .carousel-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 9/16;
+            overflow: hidden;
+            background: var(--cor-secundaria);
+        }
+
+        .carousel-slide {
+            display: none;
+            width: 100%;
+            height: 100%;
+            animation: fadeIn 0.5s ease-in-out;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 50px 30px;
+            text-align: center;
+            border: 1px solid #eee;
+        }
+
+        .carousel-slide.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* SLIDES */
+        .slide-1 {
+            background: linear-gradient(135deg, var(--cor-secundaria) 0%, #f9f9f9 100%);
+            border-top: 8px solid var(--cor-primaria);
+        }
+
+        .slide-1 h1 {
+            font-family: var(--fonte-titulo);
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            line-height: 1.2;
+            color: var(--cor-primaria);
+        }
+
+        .slide-1 .features {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+            font-size: 16px;
+            color: var(--cor-texto);
+        }
+
+        .slide-1 .cta {
+            font-size: 18px;
+            margin-top: 20px;
+            color: var(--cor-acentos);
+            font-style: italic;
+        }
+
+        .slide-2,
+        .slide-3,
+        .slide-4,
+        .slide-5,
+        .slide-6,
+        .slide-7,
+        .slide-8,
+        .slide-9,
+        .slide-10 {
+            background: white;
+            color: var(--cor-texto);
+            border-top: 8px solid var(--cor-primaria);
+        }
+
+        .carousel-slide h2 {
+            font-family: var(--fonte-titulo);
+            font-size: 32px;
+            margin-bottom: 25px;
+            color: var(--cor-primaria);
+            font-weight: 700;
+        }
+
+        .carousel-slide h3 {
+            font-size: 18px;
+            margin: 15px 0 10px;
+            color: var(--cor-primaria);
+            font-weight: 600;
+        }
+
+        .carousel-slide p,
+        .carousel-slide li {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--cor-texto);
+            margin: 8px 0;
+        }
+
+        .carousel-slide ul {
+            list-style: none;
+            margin: 15px 0;
+        }
+
+        .carousel-slide li {
+            padding: 5px 0;
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+            width: 100%;
+        }
+
+        .comparison-item {
+            background: var(--cor-fundo);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid var(--cor-primaria);
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+            width: 100%;
+        }
+
+        .benefit-item {
+            background: var(--cor-fundo);
+            padding: 15px;
+            border-radius: 8px;
+            border-top: 3px solid var(--cor-primaria);
+        }
+
+        .benefit-item strong {
+            display: block;
+            color: var(--cor-primaria);
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+
+        .tech-box {
+            background: var(--cor-fundo);
+            border-left: 4px solid var(--cor-primaria);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 12px 0;
+            text-align: left;
+        }
+
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        .step {
+            background: var(--cor-fundo);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--cor-primaria);
+            text-align: left;
+        }
+
+        .step strong {
+            color: var(--cor-primaria);
+            display: block;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+
+        .carousel-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #eee;
+        }
+
+        .carousel-controls button {
+            background: var(--cor-primaria);
+            color: var(--cor-secundaria);
+            padding: 10px 20px;
+        }
+
+        .carousel-controls button:hover {
+            background: var(--cor-acentos);
+        }
+
+        .slide-counter {
+            color: var(--cor-acentos);
+            font-weight: 600;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .dots {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #eee;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ddd;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .dot.active {
+            background: var(--cor-primaria);
+            width: 30px;
+            border-radius: 5px;
+        }
+
+        .status {
+            margin-top: 10px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        @media (max-width: 600px) {
+            .carousel-wrapper {
+                aspect-ratio: auto;
+                min-height: 600px;
+            }
+
+            .carousel-slide {
+                padding: 40px 20px;
+            }
+
+            .carousel-slide h2 {
+                font-size: 24px;
+            }
+
+            .comparison,
+            .benefits-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .config-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <h2>⚙️ Configurar Identidade Visual</h2>
+
+        <div class="toolbar-section">
+            <h3>Cores</h3>
+            <div class="config-grid">
+                <div class="config-item">
+                    <label>Cor Primária</label>
+                    <input type="color" id="corPrimaria" value="#000000" onchange="atualizarCores()">
+                </div>
+                <div class="config-item">
+                    <label>Cor Secundária</label>
+                    <input type="color" id="corSecundaria" value="#FFFFFF" onchange="atualizarCores()">
+                </div>
+                <div class="config-item">
+                    <label>Cor Acentos</label>
+                    <input type="color" id="corAcentos" value="#808080" onchange="atualizarCores()">
+                </div>
+                <div class="config-item">
+                    <label>Cor Fundo</label>
+                    <input type="color" id="corFundo" value="#f5f5f5" onchange="atualizarCores()">
+                </div>
+            </div>
+        </div>
+
+        <div class="toolbar-section">
+            <h3>Tipografia</h3>
+            <div class="config-grid">
+                <div class="config-item">
+                    <label>Fonte Principal</label>
+                    <select id="fontePrincipal" onchange="atualizarFontes()">
+                        <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">Segoe UI</option>
+                        <option value="'Arial', sans-serif">Arial</option>
+                        <option value="'Helvetica', sans-serif">Helvetica</option>
+                        <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                    </select>
+                </div>
+                <div class="config-item">
+                    <label>Fonte Títulos</label>
+                    <select id="fonteTitulo" onchange="atualizarFontes()">
+                        <option value="'Georgia', serif">Georgia</option>
+                        <option value="'Garamond', serif">Garamond</option>
+                        <option value="'Times New Roman', serif">Times New Roman</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-pdf" onclick="gerarPDF()">📥 Baixar PDF</button>
+            <button class="btn-view" onclick="resetarCores()">🔄 Resetar Padrão</button>
+        </div>
+        <div id="status" class="status"></div>
+    </div>
+
+    <div class="carousel-container">
+        <div class="carousel-wrapper">
+            <!-- SLIDE 1 -->
+            <div class="carousel-slide slide-1 active">
+                <h1>FAST COLOR TRUSS<br><span style="font-size: 24px;">A Revolução que Você Tava Esperando</span></h1>
+                <div class="features">
+                    <div>⏱️ Coloração em 10 MINUTOS</div>
+                    <div>100% Cobertura de brancos</div>
+                    <div>Fórmula VEGANA</div>
+                    <div>Resultado profissional</div>
+                </div>
+                <div class="cta">Desliza que eu mostro tudo! 👇</div>
+            </div>
+
+            <!-- SLIDE 2 -->
+            <div class="carousel-slide slide-2">
+                <h2>QUAL É A DIFERENÇA?</h2>
+                <div class="comparison">
+                    <div class="comparison-item">
+                        <h3>TRADICIONAL</h3>
+                        <ul>
+                            <li>⏳ 35 minutos</li>
+                            <li>😴 Cliente impaciente</li>
+                            <li>💸 Menos clientes/dia</li>
+                        </ul>
+                    </div>
+                    <div class="comparison-item">
+                        <h3>FAST COLOR</h3>
+                        <ul>
+                            <li>⏱️ 10 MINUTOS</li>
+                            <li>😊 Cliente feliz</li>
+                            <li>💰 Mais clientes/dia</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 3 -->
+            <div class="carousel-slide slide-3">
+                <h2>HIGH PIGMENTS TECHNOLOGY 🚀</h2>
+                <div class="tech-box">
+                    <h3>O que é?</h3>
+                    <p>→ Deposita MAIS pigmentos</p>
+                    <p>→ Penetra MAIS RÁPIDO no fio</p>
+                    <p>→ Fixa a cor PROFUNDAMENTE</p>
+                    <p>→ Resultado HOMOGÊNEO</p>
+                </div>
+                <div class="tech-box">
+                    <p><strong>Resultado?</strong><br>✅ Cobertura até 100% de brancos<br>✅ Mesmo em cabelos difíceis!</p>
+                </div>
+            </div>
+
+            <!-- SLIDE 4 -->
+            <div class="carousel-slide slide-4">
+                <h2>COBERTURA 100% DE BRANCOS</h2>
+                <p>Você sabe aquele cliente com MUITO branco resistente?</p>
+                <p style="margin: 15px 0; font-weight: 600;">FAST COLOR resolve isso!</p>
+                <ul>
+                    <li>✅ Até 100% cobertura</li>
+                    <li>✅ Mesmo fios resistentes</li>
+                    <li>✅ Tempo reduzido</li>
+                    <li>✅ Resultado homogêneo</li>
+                </ul>
+            </div>
+
+            <!-- SLIDE 5 -->
+            <div class="carousel-slide slide-5">
+                <h2>NÃO É SÓ COR, É MUITO MAIS</h2>
+                <p style="margin-bottom: 20px; font-weight: 600;">A Fast Color trata enquanto colore!</p>
+                <div class="benefits-grid">
+                    <div class="benefit-item"><strong>🌟 BRILHO</strong> intenso</div>
+                    <div class="benefit-item"><strong>🧴 MACIEZ</strong> profunda</div>
+                    <div class="benefit-item"><strong>💪 PROTEÇÃO</strong> contra agressões</div>
+                    <div class="benefit-item"><strong>🌱 VEGANA</strong> (não prejudica)</div>
+                    <div class="benefit-item"><strong>🚫 SEM PPD</strong> (segura)</div>
+                    <div class="benefit-item"><strong>✨ BRILHO 3D</strong></div>
+                </div>
+            </div>
+
+            <!-- SLIDE 6 -->
+            <div class="carousel-slide slide-6">
+                <h2>SEM AGRESSÃO AOS FIOS</h2>
+                <p style="margin: 20px 0;">Você provavelmente ouve: "Coloração danifica cabelo"</p>
+                <p style="margin: 20px 0; font-weight: 600;">Mas aqui não!</p>
+                <ul>
+                    <li>✓ Colorir</li>
+                    <li>✓ Tratar</li>
+                    <li>✓ Proteger</li>
+                    <li>✓ NÃO danificar</li>
+                </ul>
+            </div>
+
+            <!-- SLIDE 7 -->
+            <div class="carousel-slide slide-7">
+                <h2>IDEAL PARA</h2>
+                <ul>
+                    <li>✅ <strong>Retoque frequente:</strong> economia de tempo</li>
+                    <li>✅ <strong>Muito branco:</strong> cobertura 100%</li>
+                    <li>✅ <strong>Profissionais ocupados:</strong> 10 min muda tudo</li>
+                    <li>✅ <strong>Cabelo tratado:</strong> não só colorido</li>
+                    <li>✅ <strong>Qualquer tipo:</strong> super versátil</li>
+                </ul>
+            </div>
+
+            <!-- SLIDE 8 -->
+            <div class="carousel-slide slide-8">
+                <h2>PASSO A PASSO RÁPIDO</h2>
+                <div class="steps">
+                    <div class="step">
+                        <strong>1️⃣ PREPARO (2 min)</strong>
+                        Misture Fast Color + Água Oxigenada
+                    </div>
+                    <div class="step">
+                        <strong>2️⃣ APLICAÇÃO (5 min)</strong>
+                        Cabelo seco e limpo / Seção por seção
+                    </div>
+                    <div class="step">
+                        <strong>3️⃣ PAUSA (10 min)</strong>
+                        Apenas espere / Ação começa rápido!
+                    </div>
+                    <div class="step">
+                        <strong>4️⃣ FINALIZAÇÃO (3 min)</strong>
+                        Emulsionar + Enxaguar / Pode usar leave in
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 9 -->
+            <div class="carousel-slide slide-9">
+                <h2>FAST COLOR vs TRADICIONAL</h2>
+                <div class="tech-box">
+                    <strong>TEMPO:</strong><br>Fast Color: ⏱️ 10 min | Tradicional: ⏳ 35 min<br><strong>VENCEDOR: Fast Color 🏆</strong>
+                </div>
+                <div class="tech-box">
+                    <strong>COBERTURA:</strong><br>Fast Color: 100% | Tradicional: 85-95%<br><strong>VENCEDOR: Fast Color 🏆</strong>
+                </div>
+                <div class="tech-box">
+                    <strong>TRATAMENTO:</strong><br>Fast Color: Trata enquanto colore | Tradicional: Só colore<br><strong>VENCEDOR: Fast Color 🏆</strong>
+                </div>
+            </div>
+
+            <!-- SLIDE 10 -->
+            <div class="carousel-slide slide-10">
+                <h2>JÁ TESTOU FAST COLOR?</h2>
+                <p style="margin: 20px 0;">Se você ainda não experimentou, você tá deixando dinheiro na mesa!</p>
+                <h3>BENEFÍCIOS IMEDIATOS:</h3>
+                <ul>
+                    <li>💰 Mais clientes por dia</li>
+                    <li>⏰ Economia de tempo</li>
+                    <li>😊 Cliente satisfeita</li>
+                    <li>✨ Resultado melhor</li>
+                    <li>🚀 Produtividade no teto</li>
+                </ul>
+                <p style="margin-top: 20px; font-weight: 600; font-style: italic;">#FASTCOLOR #TRUSS #ARTISTATRUSS</p>
+            </div>
+        </div>
+
+        <div class="carousel-controls">
+            <button onclick="previousSlide()">← Anterior</button>
+            <div class="slide-counter"><span id="current-slide">1</span> / 10</div>
+            <button onclick="nextSlide()">Próximo →</button>
+        </div>
+
+        <div class="dots" id="dots-container"></div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.carousel-slide');
+        const totalSlides = slides.length;
+
+        function initDots() {
+            const dotsContainer = document.getElementById('dots-container');
+            for (let i = 0; i < totalSlides; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'dot' + (i === 0 ? ' active' : '');
+                dot.onclick = () => goToSlide(i);
+                dotsContainer.appendChild(dot);
+            }
+        }
+
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[n].classList.add('active');
+            document.querySelectorAll('.dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === n);
+            });
+            document.getElementById('current-slide').textContent = n + 1;
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            showSlide(currentSlide);
+        }
+
+        function previousSlide() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            showSlide(currentSlide);
+        }
+
+        function goToSlide(n) {
+            currentSlide = n;
+            showSlide(currentSlide);
+        }
+
+        function atualizarCores() {
+            const corPrimaria = document.getElementById('corPrimaria').value;
+            const corSecundaria = document.getElementById('corSecundaria').value;
+            const corAcentos = document.getElementById('corAcentos').value;
+            const corFundo = document.getElementById('corFundo').value;
+
+            document.documentElement.style.setProperty('--cor-primaria', corPrimaria);
+            document.documentElement.style.setProperty('--cor-secundaria', corSecundaria);
+            document.documentElement.style.setProperty('--cor-acentos', corAcentos);
+            document.documentElement.style.setProperty('--cor-fundo', corFundo);
+        }
+
+        function atualizarFontes() {
+            const fontePrincipal = document.getElementById('fontePrincipal').value;
+            const fonteTitulo = document.getElementById('fonteTitulo').value;
+
+            document.documentElement.style.setProperty('--fonte-principal', fontePrincipal);
+            document.documentElement.style.setProperty('--fonte-titulo', fonteTitulo);
+        }
+
+        function resetarCores() {
+            document.getElementById('corPrimaria').value = '#000000';
+            document.getElementById('corSecundaria').value = '#FFFFFF';
+            document.getElementById('corAcentos').value = '#808080';
+            document.getElementById('corFundo').value = '#f5f5f5';
+            document.getElementById('fontePrincipal').value = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+            document.getElementById('fonteTitulo').value = "'Georgia', serif";
+            atualizarCores();
+            atualizarFontes();
+        }
+
+        function gerarPDF() {
+            const statusEl = document.getElementById('status');
+            statusEl.className = 'status';
+            statusEl.textContent = '⏳ Gerando PDF...';
+
+            const elemento = document.querySelector('.carousel-container');
+            const opt = {
+                margin: 5,
+                filename: 'Fast-Color-TRUSS.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { orientation: 'p', unit: 'mm', format: 'a4' }
+            };
+
+            html2pdf().set(opt).from(elemento).save();
+
+            setTimeout(() => {
+                statusEl.className = 'status success';
+                statusEl.textContent = '✅ PDF baixado com sucesso!';
+                setTimeout(() => {
+                    statusEl.className = 'status';
+                }, 3000);
+            }, 2000);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') previousSlide();
+        });
+
+        initDots();
+    </script>
+</body>
+</html>
