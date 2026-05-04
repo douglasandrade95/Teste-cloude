@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Editor Pro - Upload, Edite e Exporte</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6496ff;
+            --primary-dark: #5185ff;
+            --danger: #ff6b6b;
+            --success: #51cf66;
+            --bg-dark: #0f0f0f;
+            --bg-light: #1a1a1a;
+            --border: #333;
+            --text: #fff;
+            --text-muted: #888;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 30px 0;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(100, 150, 255, 0.2);
+        }
+
+        header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .main-editor {
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .editor-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            background: #0f0f0f;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 16px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary);
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(100, 150, 255, 0.05);
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(100, 150, 255, 0.1);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--primary);
+            background: rgba(100, 150, 255, 0.15);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Media List */
+        .media-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .media-item {
+            position: relative;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: grab;
+            transition: all 0.3s;
+        }
+
+        .media-item:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 12px rgba(100, 150, 255, 0.3);
+        }
+
+        .media-item img,
+        .media-item video {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .media-item-info {
+            padding: 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .media-item-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .media-item:hover .media-item-remove {
+            opacity: 1;
+        }
+
+        /* Prompt Area */
+        .prompt-section {
+            background: rgba(100, 150, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .prompt-section label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .prompt-section textarea {
+            width: 100%;
+            min-height: 100px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
+            color: var(--text);
+            font-family: inherit;
+            resize: vertical;
+            transition: all 0.3s;
+        }
+
+        .prompt-section textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 12px rgba(100, 150, 255, 0.2);
+        }
+
+        /* Preview */
+        .preview-container {
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-container video,
+        .preview-container img {
+            max-width: 100%;
+            max-height: 600px;
+            width: auto;
+            height: auto;
+        }
+
+        .preview-placeholder {
+            color: var(--text-muted);
+            font-size: 18px;
+        }
+
+        /* Timeline */
+        .timeline-section {
+            margin-top: 20px;
+        }
+
+        .timeline-title {
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .timeline-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .timeline-drag-handle {
+            cursor: grab;
+            opacity: 0.5;
+            font-size: 18px;
+        }
+
+        .timeline-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .timeline-name {
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .timeline-duration {
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        .timeline-remove {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0 8px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sidebar-card {
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .sidebar-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .settings-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+        }
+
+        .setting-item label {
+            font-size: 13px;
+            flex: 1;
+            color: var(--text-muted);
+        }
+
+        .setting-item input[type="number"],
+        .setting-item select {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            padding: 6px 8px;
+            font-size: 13px;
+            width: 80px;
+            cursor: pointer;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(100, 150, 255, 0.3);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: #000;
+        }
+
+        .btn-success:hover {
+            background: #45b761;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #ff5252;
+        }
+
+        .btn-secondary {
+            background: var(--bg-dark);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: #2a2a2a;
+            border-color: var(--primary);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Status */
+        .status-section {
+            padding: 16px;
+            background: rgba(100, 150, 255, 0.05);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .status-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .status-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 24px;
+            }
+
+            .tab-btn {
+                padding: 12px;
+                font-size: 12px;
+            }
+
+            .media-list {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            }
+        }
+
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            padding: 16px 20px;
+            border-radius: 8px;
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.success {
+            border-left-color: var(--success);
+        }
+
+        .toast.error {
+            border-left-color: var(--danger);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎬 Video Editor Pro</h1>
+            <p>Upload seus vídeos, fotos e edite tudo em um só lugar</p>
+        </header>
+
+        <div class="layout">
+            <div class="main-editor">
+                <!-- Tabs -->
+                <div class="editor-tabs">
+                    <button class="tab-btn active" onclick="switchTab('upload')">📤 Upload</button>
+                    <button class="tab-btn" onclick="switchTab('editor')">✏️ Editor</button>
+                    <button class="tab-btn" onclick="switchTab('export')">💾 Exportar</button>
+                </div>
+
+                <!-- Upload Tab -->
+                <div id="upload" class="tab-content active">
+                    <h2 style="margin-bottom: 20px; font-size: 18px;">Selecione seus arquivos</h2>
+
+                    <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                        <div class="upload-icon">📁</div>
+                        <div class="upload-text">Clique ou arraste seus arquivos aqui</div>
+                        <div class="upload-hint">Vídeos (MP4, WebM) • Imagens (PNG, JPG) • Áudio (MP3, WAV)</div>
+                    </div>
+
+                    <input type="file" id="fileInput" multiple accept="video/*,image/*,audio/*" onchange="handleFileSelect(event)">
+
+                    <div class="media-list" id="mediaList"></div>
+                </div>
+
+                <!-- Editor Tab -->
+                <div id="editor" class="tab-content">
+                    <h2 style="margin-bottom: 20px; font-size: 18px;">Edite seus arquivos</h2>
+
+                    <div class="preview-container" id="previewContainer">
+                        <div class="preview-placeholder">Selecione um arquivo para visualizar</div>
+                    </div>
+
+                    <div class="prompt-section">
+                        <label>📝 Descrição / Prompt (Opcional)</label>
+                        <textarea id="promptText" placeholder="Descreva as edições que você quer fazer, efeitos, transições, etc..."></textarea>
+                    </div>
+
+                    <div class="timeline-section">
+                        <div class="timeline-title">Timeline</div>
+                        <div class="timeline-list" id="timelineList"></div>
+                    </div>
+                </div>
+
+                <!-- Export Tab -->
+                <div id="export" class="tab-content">
+                    <h2 style="margin-bottom: 20px; font-size: 18px;">Exportar seu vídeo</h2>
+
+                    <div class="status-section">
+                        <div class="status-label">Arquivos Adicionados</div>
+                        <div class="status-value" id="fileCount">0</div>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="setting-item">
+                            <label>Qualidade do Vídeo</label>
+                            <select id="quality">
+                                <option value="720">720p</option>
+                                <option value="1080" selected>1080p</option>
+                                <option value="2160">2160p</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-item">
+                            <label>Taxa de Quadros (FPS)</label>
+                            <select id="fps">
+                                <option value="24">24 FPS</option>
+                                <option value="30" selected>30 FPS</option>
+                                <option value="60">60 FPS</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-success" onclick="exportVideo()" style="margin-top: 20px;">
+                        <span>⬇️</span> Exportar Vídeo
+                    </button>
+
+                    <button class="btn btn-secondary" onclick="resetEditor()" style="margin-top: 12px;">
+                        🔄 Limpar Tudo
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-card">
+                    <h3>⚙️ Configurações</h3>
+                    <div class="settings-group">
+                        <div class="setting-item">
+                            <label>Volume</label>
+                            <input type="number" min="0" max="100" value="100">
+                        </div>
+                        <div class="setting-item">
+                            <label>Velocidade</label>
+                            <input type="number" min="0.5" max="2" step="0.1" value="1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <h3>📊 Informações</h3>
+                    <div class="settings-group">
+                        <div class="setting-item">
+                            <label>Duração Total:</label>
+                            <span id="totalDuration">0s</span>
+                        </div>
+                        <div class="setting-item">
+                            <label>Tamanho Total:</label>
+                            <span id="totalSize">0 MB</span>
+                        </div>
+                        <div class="setting-item">
+                            <label>Arquivos:</label>
+                            <span id="fileCountInfo">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <h3>💡 Dicas</h3>
+                    <ul style="font-size: 13px; color: var(--text-muted); line-height: 1.8; list-position: inside;">
+                        <li>✓ Use drag & drop para reordenar</li>
+                        <li>✓ Máx 10 arquivos por vez</li>
+                        <li>✓ Máx 500MB por arquivo</li>
+                        <li>✓ Use o prompt para descrever edições</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let mediaFiles = [];
+        let totalSize = 0;
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            // Update file count on export tab
+            if (tabName === 'export') {
+                document.getElementById('fileCount').textContent = mediaFiles.length;
+            }
+        }
+
+        // Upload handling
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => {
+                uploadArea.classList.add('dragover');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => {
+                uploadArea.classList.remove('dragover');
+            });
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        });
+
+        function handleFileSelect(event) {
+            handleFiles(event.target.files);
+        }
+
+        function handleFiles(files) {
+            if (mediaFiles.length + files.length > 10) {
+                showToast('Máximo 10 arquivos permitidos', 'error');
+                return;
+            }
+
+            for (let file of files) {
+                if (file.size > 500 * 1024 * 1024) {
+                    showToast(`${file.name} é muito grande (máx 500MB)`, 'error');
+                    continue;
+                }
+
+                if (!file.type.startsWith('video/') && !file.type.startsWith('image/') && !file.type.startsWith('audio/')) {
+                    showToast(`${file.name} não é um tipo de arquivo válido`, 'error');
+                    continue;
+                }
+
+                const fileObj = {
+                    id: Date.now() + Math.random(),
+                    file: file,
+                    name: file.name,
+                    type: file.type.split('/')[0],
+                    size: file.size,
+                    url: URL.createObjectURL(file)
+                };
+
+                mediaFiles.push(fileObj);
+                totalSize += file.size;
+            }
+
+            updateUI();
+            showToast(`${files.length} arquivo(s) adicionado(s)!`, 'success');
+        }
+
+        function updateUI() {
+            // Update media list
+            const mediaList = document.getElementById('mediaList');
+            mediaList.innerHTML = mediaFiles.map(media => `
+                <div class="media-item" onclick="previewMedia('${media.id}')">
+                    ${media.type === 'video' ? `<video src="${media.url}"></video>` : media.type === 'audio' ? '<div style="width: 100%; height: 100px; display: flex; align-items: center; justify-content: center; background: #333; font-size: 32px;">🔊</div>' : `<img src="${media.url}">`}
+                    <div class="media-item-info">${media.name}</div>
+                    <button class="media-item-remove" onclick="removeMedia('${media.id}', event)">✕</button>
+                </div>
+            `).join('');
+
+            // Update timeline
+            const timelineList = document.getElementById('timelineList');
+            timelineList.innerHTML = mediaFiles.map((media, idx) => `
+                <div class="timeline-item" draggable="true">
+                    <span class="timeline-drag-handle">≡</span>
+                    <div class="timeline-info">
+                        <div class="timeline-name">${idx + 1}. ${media.name}</div>
+                        <div class="timeline-duration">${(media.size / 1024 / 1024).toFixed(2)} MB</div>
+                    </div>
+                    <button class="timeline-remove" onclick="removeMedia('${media.id}')">✕</button>
+                </div>
+            `).join('');
+
+            // Update sidebar info
+            document.getElementById('fileCountInfo').textContent = mediaFiles.length;
+            document.getElementById('totalSize').textContent = (totalSize / 1024 / 1024).toFixed(2) + ' MB';
+        }
+
+        function removeMedia(id, event) {
+            if (event) event.stopPropagation();
+            const index = mediaFiles.findIndex(m => m.id === id);
+            if (index > -1) {
+                totalSize -= mediaFiles[index].size;
+                mediaFiles.splice(index, 1);
+                updateUI();
+                showToast('Arquivo removido', 'success');
+            }
+        }
+
+        function previewMedia(id) {
+            const media = mediaFiles.find(m => m.id === id);
+            if (!media) return;
+
+            const container = document.getElementById('previewContainer');
+            if (media.type === 'video') {
+                container.innerHTML = `<video src="${media.url}" controls style="width: 100%; height: 100%;"></video>`;
+            } else if (media.type === 'image') {
+                container.innerHTML = `<img src="${media.url}">`;
+            } else if (media.type === 'audio') {
+                container.innerHTML = `<audio src="${media.url}" controls style="width: 90%;"></audio>`;
+            }
+        }
+
+        function exportVideo() {
+            if (mediaFiles.length === 0) {
+                showToast('Adicione arquivos primeiro!', 'error');
+                return;
+            }
+
+            const quality = document.getElementById('quality').value;
+            const fps = document.getElementById('fps').value;
+            const prompt = document.getElementById('promptText').value;
+
+            // Simular exportação
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Exportando...';
+
+            // Criar blob com informações
+            const metadata = {
+                files: mediaFiles.map(m => ({ name: m.name, type: m.type, size: m.size })),
+                quality: quality + 'p',
+                fps: fps + ' FPS',
+                prompt: prompt,
+                timestamp: new Date().toISOString()
+            };
+
+            setTimeout(() => {
+                // Simular download
+                const dataStr = JSON.stringify(metadata, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `video-export-${Date.now()}.json`;
+                link.click();
+
+                btn.disabled = false;
+                btn.innerHTML = '<span>⬇️</span> Exportar Vídeo';
+                showToast('Vídeo exportado com sucesso!', 'success');
+            }, 2000);
+        }
+
+        function resetEditor() {
+            if (confirm('Tem certeza que deseja limpar tudo?')) {
+                mediaFiles = [];
+                totalSize = 0;
+                document.getElementById('promptText').value = '';
+                document.getElementById('fileInput').value = '';
+                updateUI();
+                showToast('Editor limpo', 'success');
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Initialize
+        updateUI();
+    </script>
+</body>
+</html>
