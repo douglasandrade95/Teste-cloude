@@ -13,7 +13,9 @@ from app.models.schemas import (
 )
 from app.services.ai_analyzer import AIAnalyzer
 from app.services.video_processor import VideoProcessor
+from app.services.remotion_renderer import remotion_render_service
 from app.config import get_settings
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1", tags=["video_editor"])
@@ -24,6 +26,22 @@ video_processor = VideoProcessor()
 
 # In-memory storage for demo (replace with database in production)
 projects = {}
+
+
+# Request/Response Models for Remotion
+class RenderVideoRequest(BaseModel):
+    composition_id: str
+    duration_in_frames: int
+    fps: int
+    width: int
+    height: int
+    props: Optional[dict] = None
+
+
+class RenderVideoResponse(BaseModel):
+    job_id: str
+    status: str
+    url: Optional[str] = None
 
 
 @router.post("/upload")
@@ -221,3 +239,64 @@ async def process_video_editing(project_id: str, video_path: str, analysis: dict
         logger.error(f"Processing error: {e}")
         projects[project_id]["status"] = "error"
         projects[project_id]["error"] = str(e)
+
+
+# Remotion Rendering Endpoints
+@router.post("/render", response_model=RenderVideoResponse)
+async def render_video(request: RenderVideoRequest):
+    """Start a Remotion video rendering job."""
+    try:
+        job = await remotion_render_service.create_render_job(
+            composition_id=request.composition_id,
+            duration_in_frames=request.duration_in_frames,
+            fps=request.fps,
+            width=request.width,
+            height=request.height,
+            props=request.props,
+        )
+
+        return RenderVideoResponse(
+            job_id=job.job_id,
+            status=job.status,
+            url=job.output_url,
+        )
+
+    except Exception as e:
+        logger.error(f"Render error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/render/{job_id}", response_model=RenderVideoResponse)
+async def get_render_status(job_id: str):
+    """Get the status of a render job."""
+    job = await remotion_render_service.get_job_status(job_id)
+
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    return RenderVideoResponse(
+        job_id=job.job_id,
+        status=job.status,
+        url=job.output_url,
+    )
+
+
+@router.delete("/render/{job_id}")
+async def cancel_render(job_id: str):
+    """Cancel a render job."""
+    success = await remotion_render_service.cancel_job(job_id)
+
+    if not success:
+        raise HTTPException(status_code=400, detail="Cannot cancel job")
+
+    return {"message": "Job cancelled successfully"}
+
+
+@router.get("/render-jobs")
+async def list_render_jobs():
+    """List all render jobs."""
+    jobs = remotion_render_service.get_all_jobs()
+    return {
+        "total": len(jobs),
+        "jobs": [job.to_dict() for job in jobs.values()],
+    }
