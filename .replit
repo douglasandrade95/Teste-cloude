@@ -1,0 +1,17 @@
+run = "bash ./scripts/replit-start.sh"
+modules = ["python-3.11", "nodejs-20"]
+
+[deployment]
+deploymentTarget = "gce"
+
+[env]
+PYTHONUNBUFFERED = "1"
+VITE_API_URL = "$REPLIT_DEPLOYMENT_URL/api/v1"
+
+[[ports]]
+localPort = 8000
+exposeLocalhost = true
+
+[[ports]]
+localPort = 5173
+exposeLocalhost = true
