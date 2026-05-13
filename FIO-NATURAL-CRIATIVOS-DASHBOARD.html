@@ -1,0 +1,1895 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIO Natural - Dashboard de Criativos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        header {
+            background: linear-gradient(135deg, #8FA297 0%, #4D4F4C 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        nav button {
+            padding: 12px 24px;
+            background: white;
+            border: 2px solid #8FA297;
+            color: #8FA297;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 1em;
+        }
+
+        nav button:hover,
+        nav button.active {
+            background: #8FA297;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(143, 162, 151, 0.3);
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section h2 {
+            font-size: 2em;
+            color: #4D4F4C;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #8FA297;
+            padding-bottom: 15px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid #8FA297;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 20px rgba(143, 162, 151, 0.2);
+        }
+
+        .card h3 {
+            color: #4D4F4C;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .card .badge {
+            display: inline-block;
+            background: #8FA297;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+        }
+
+        .card-footer {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-view {
+            flex: 1;
+            background: #8FA297;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .btn-view:hover {
+            background: #4D4F4C;
+            transform: scale(1.02);
+        }
+
+        .btn-copy {
+            background: #f0f0f0;
+            color: #4D4F4C;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .btn-copy:hover {
+            background: #d9d9d9;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 2em;
+            cursor: pointer;
+            color: #666;
+            background: none;
+            border: none;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .close:hover {
+            color: #4D4F4C;
+            transform: scale(1.2);
+        }
+
+        .modal-content h2 {
+            color: #4D4F4C;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #8FA297;
+            padding-bottom: 15px;
+        }
+
+        .modal-content .badge {
+            display: inline-block;
+            background: #8FA297;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .modal-body {
+            color: #555;
+            line-height: 1.8;
+            font-size: 1em;
+        }
+
+        .modal-body pre {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            border-left: 4px solid #8FA297;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .modal-body h3 {
+            color: #4D4F4C;
+            margin: 25px 0 15px 0;
+            font-size: 1.2em;
+        }
+
+        .modal-body ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .modal-body li {
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .btn-copy-modal {
+            flex: 1;
+            background: #8FA297;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 1em;
+        }
+
+        .btn-copy-modal:hover {
+            background: #4D4F4C;
+            transform: scale(1.02);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #8FA297;
+        }
+
+        .stat-card h3 {
+            color: #8FA297;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .stat-card p {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .footer {
+            background: #4D4F4C;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            margin-top: 60px;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            nav {
+                gap: 8px;
+            }
+
+            nav button {
+                padding: 10px 16px;
+                font-size: 0.9em;
+            }
+
+            .modal-content {
+                padding: 20px;
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>FIO Natural</h1>
+        <p>Dashboard de Criativos - Estratégia Ogilvy em Ação</p>
+    </header>
+
+    <div class="container">
+        <div class="stats">
+            <div class="stat-card">
+                <h3>49</h3>
+                <p>Criativos Únicos</p>
+            </div>
+            <div class="stat-card">
+                <h3>7</h3>
+                <p>Canais de Marketing</p>
+            </div>
+            <div class="stat-card">
+                <h3>3</h3>
+                <p>Variações por Criativo</p>
+            </div>
+            <div class="stat-card">
+                <h3>100%</h3>
+                <p>Pronto para Testar</p>
+            </div>
+        </div>
+
+        <nav>
+            <button class="nav-btn active" onclick="showSection('instagram')">📱 Instagram</button>
+            <button class="nav-btn" onclick="showSection('email')">✉️ Email Marketing</button>
+            <button class="nav-btn" onclick="showSection('ads')">📊 Google & Facebook Ads</button>
+            <button class="nav-btn" onclick="showSection('social')">🎥 TikTok, Pinterest, YouTube</button>
+            <button class="nav-btn" onclick="showSection('landing')">🎯 Landing Page</button>
+            <button class="nav-btn" onclick="showSection('whatsapp')">💬 WhatsApp</button>
+            <button class="nav-btn" onclick="showSection('teste')">🧪 Plano de Teste</button>
+        </nav>
+
+        <!-- INSTAGRAM SECTION -->
+        <div id="instagram" class="section active">
+            <h2>📱 Instagram Feed Posts</h2>
+
+            <div class="grid">
+                <!-- Post 1 -->
+                <div class="card">
+                    <h3>Post 1: Enganação</h3>
+                    <span class="badge">Emocional/Confiança</span>
+                    <p>Headline com estatística impactante sobre enganação no mercado.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('insta-post1-a')">Ver Versão A</button>
+                        <button class="btn-copy" onclick="copyToClipboard('insta-post1-a')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Post 1: Enganação</h3>
+                    <span class="badge">Provocativa</span>
+                    <p>Abordagem desafiadora focada em confrontar o problema.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('insta-post1-b')">Ver Versão B</button>
+                        <button class="btn-copy" onclick="copyToClipboard('insta-post1-b')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Post 1: Enganação</h3>
+                    <span class="badge">Funcional</span>
+                    <p>Abordagem com dados e checklist de diferencial.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('insta-post1-c')">Ver Versão C</button>
+                        <button class="btn-copy" onclick="copyToClipboard('insta-post1-c')">📋</button>
+                    </div>
+                </div>
+
+                <!-- Post 2 -->
+                <div class="card">
+                    <h3>Post 2: IA (Recomendação)</h3>
+                    <span class="badge">Educativa</span>
+                    <p>Explica como a IA funciona e traz segurança.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('insta-post2-a')">Ver Versão A</button>
+                        <button class="btn-copy" onclick="copyToClipboard('insta-post2-a')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Post 2: IA (Recomendação)</h3>
+                    <span class="badge">Prova Social</span>
+                    <p>Depoimento real de cliente satisfeita.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('insta-post2-b')">Ver Versão B</button>
+                        <button class="btn-copy" onclick="copyToClipboard('insta-post2-b')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Post 2: IA (Recomendação)</h3>
+                    <span class="badge">Provocativa</span>
+                    <p>Desafia outras marcas que têm retorno.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('insta-post2-c')">Ver Versão C</button>
+                        <button class="btn-copy" onclick="copyToClipboard('insta-post2-c')">📋</button>
+                    </div>
+                </div>
+
+                <!-- Post 3 -->
+                <div class="card">
+                    <h3>Post 3: Origem Brasileira</h3>
+                    <span class="badge">Patriótica</span>
+                    <p>Angle de origem conhecido e segurança.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('insta-post3-a')">Ver Versão A</button>
+                        <button class="btn-copy" onclick="copyToClipboard('insta-post3-a')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Post 3: Origem Brasileira</h3>
+                    <span class="badge">Fatos</span>
+                    <p>Foco em razões técnicas de origem comprovada.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('insta-post3-b')">Ver Versão B</button>
+                        <button class="btn-copy" onclick="copyToClipboard('insta-post3-b')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Post 3: Origem Brasileira</h3>
+                    <span class="badge">Emocional</span>
+                    <p>Conexão emocional com confiança na compra.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('insta-post3-c')">Ver Versão C</button>
+                        <button class="btn-copy" onclick="copyToClipboard('insta-post3-c')">📋</button>
+                    </div>
+                </div>
+
+                <!-- Post 4 -->
+                <div class="card">
+                    <h3>Post 4: Democratização</h3>
+                    <span class="badge">Inclusiva</span>
+                    <p>Mensagem de acesso democrático a qualidade.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('insta-post4-a')">Ver Versão A</button>
+                        <button class="btn-copy" onclick="copyToClipboard('insta-post4-a')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Post 4: Democratização</h3>
+                    <span class="badge">Provocativa</span>
+                    <p>Confronta marcas que cobram premium por honestidade.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('insta-post4-b')">Ver Versão B</button>
+                        <button class="btn-copy" onclick="copyToClipboard('insta-post4-b')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Post 4: Democratização</h3>
+                    <span class="badge">Aspiracional</span>
+                    <p>Posiciona FIO Natural como almejável mas acessível.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('insta-post4-c')">Ver Versão C</button>
+                        <button class="btn-copy" onclick="copyToClipboard('insta-post4-c')">📋</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EMAIL SECTION -->
+        <div id="email" class="section">
+            <h2>✉️ Email Marketing</h2>
+
+            <div class="grid">
+                <div class="card">
+                    <h3>Welcome Email</h3>
+                    <span class="badge">Educativa</span>
+                    <p>Apresentação suave com ênfase na IA de recomendação.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('email-welcome-a')">Ver Versão A</button>
+                        <button class="btn-copy" onclick="copyToClipboard('email-welcome-a')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Welcome Email</h3>
+                    <span class="badge">Provocativa</span>
+                    <p>Confronta problema de enganação logo na entrada.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('email-welcome-b')">Ver Versão B</button>
+                        <button class="btn-copy" onclick="copyToClipboard('email-welcome-b')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Abandono de Carrinho</h3>
+                    <span class="badge">Suave</span>
+                    <p>Oferece ajuda sem pressão (IA + atendimento).</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('email-abandon-a')">Ver Versão A</button>
+                        <button class="btn-copy" onclick="copyToClipboard('email-abandon-a')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Abandono de Carrinho</h3>
+                    <span class="badge">Urgência</span>
+                    <p>Usa desconto e urgência para retorno (sem agressividade).</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('email-abandon-b')">Ver Versão B</button>
+                        <button class="btn-copy" onclick="copyToClipboard('email-abandon-b')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Pós-Compra (7 dias)</h3>
+                    <span class="badge">Educativa</span>
+                    <p>Oferece dicas de cuidado e suporte continuado.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('email-poscompra-a')">Ver Versão A</button>
+                        <button class="btn-copy" onclick="copyToClipboard('email-poscompra-a')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Pós-Compra (7 dias)</h3>
+                    <span class="badge">Prova Social</span>
+                    <p>Pede feedback e incentiva compartilhamento.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('email-poscompra-b')">Ver Versão B</button>
+                        <button class="btn-copy" onclick="copyToClipboard('email-poscompra-b')">📋</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADS SECTION -->
+        <div id="ads" class="section">
+            <h2>📊 Google Ads & Facebook Ads</h2>
+
+            <div class="grid">
+                <div class="card">
+                    <h3>Google Ads</h3>
+                    <span class="badge">Dados</span>
+                    <p>Foca em estatísticas e diferenciais técnicos.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('ads-google-a')">Ver Versão A</button>
+                        <button class="btn-copy" onclick="copyToClipboard('ads-google-a')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Google Ads</h3>
+                    <span class="badge">Benefício</span>
+                    <p>Foca em resultado (confiança + acerto).</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('ads-google-b')">Ver Versão B</button>
+                        <button class="btn-copy" onclick="copyToClipboard('ads-google-b')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Google Ads</h3>
+                    <span class="badge">Provocativa</span>
+                    <p>Confronta problema e posiciona solução.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('ads-google-c')">Ver Versão C</button>
+                        <button class="btn-copy" onclick="copyToClipboard('ads-google-c')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Facebook Ads - Vídeo</h3>
+                    <span class="badge">Awareness</span>
+                    <p>Vídeo curto (3-5s) mostrando antes/depois.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('ads-fb-video')">Ver Script</button>
+                        <button class="btn-copy" onclick="copyToClipboard('ads-fb-video')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Facebook Ads - Carousel</h3>
+                    <span class="badge">Conversion</span>
+                    <p>Carousel com 3 cards (problema → diferencial → CTA).</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('ads-fb-carousel')">Ver Versão</button>
+                        <button class="btn-copy" onclick="copyToClipboard('ads-fb-carousel')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Facebook Ads - Imagem</h3>
+                    <span class="badge">Conversion</span>
+                    <p>Imagem estática com copy de confiança.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('ads-fb-image')">Ver Copy</button>
+                        <button class="btn-copy" onclick="copyToClipboard('ads-fb-image')">📋</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SOCIAL SECTION -->
+        <div id="social" class="section">
+            <h2>🎥 TikTok, Pinterest & YouTube</h2>
+
+            <div class="grid">
+                <div class="card">
+                    <h3>TikTok/Reels - Hook</h3>
+                    <span class="badge">15-30s</span>
+                    <p>Enganação real vs. FIO Natural (before/after).</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('tiktok-1')">Ver Script</button>
+                        <button class="btn-copy" onclick="copyToClipboard('tiktok-1')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>TikTok/Reels - IA</h3>
+                    <span class="badge">30s</span>
+                    <p>Mulher recebendo recomendação → abre caixa → satisfeita.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('tiktok-2')">Ver Script</button>
+                        <button class="btn-copy" onclick="copyToClipboard('tiktok-2')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>TikTok/Reels - Origem</h3>
+                    <span class="badge">20s</span>
+                    <p>Pergunta sobre origem com resposta visual.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('tiktok-3')">Ver Script</button>
+                        <button class="btn-copy" onclick="copyToClipboard('tiktok-3')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Pinterest - Educativo</h3>
+                    <span class="badge">Pin</span>
+                    <p>Infográfico: 3 sinais de cabelo falso vs. natural.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('pinterest-1')">Ver Descrição</button>
+                        <button class="btn-copy" onclick="copyToClipboard('pinterest-1')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Pinterest - Inspiração</h3>
+                    <span class="badge">Pin</span>
+                    <p>Close do cabelo FIO Natural com headline.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('pinterest-2')">Ver Descrição</button>
+                        <button class="btn-copy" onclick="copyToClipboard('pinterest-2')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>YouTube Shorts - Educativo</h3>
+                    <span class="badge">15-60s</span>
+                    <p>Script explicando 73% enganação → solução IA.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('youtube-1')">Ver Script</button>
+                        <button class="btn-copy" onclick="copyToClipboard('youtube-1')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>YouTube Shorts - Prova</h3>
+                    <span class="badge">15-30s</span>
+                    <p>Testemunho real de cliente satisfeita.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('youtube-2')">Ver Script</button>
+                        <button class="btn-copy" onclick="copyToClipboard('youtube-2')">📋</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LANDING PAGE SECTION -->
+        <div id="landing" class="section">
+            <h2>🎯 Landing Page</h2>
+
+            <div class="grid">
+                <div class="card">
+                    <h3>Hero Section</h3>
+                    <span class="badge">Confiança</span>
+                    <p>Headline "Seu Cabelo Merece Verdade" com foco emocional.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('landing-hero-a')">Ver Versão A</button>
+                        <button class="btn-copy" onclick="copyToClipboard('landing-hero-a')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Hero Section</h3>
+                    <span class="badge">Problema</span>
+                    <p>Começa com problema ("Cansada de ser enganada?").</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('landing-hero-b')">Ver Versão B</button>
+                        <button class="btn-copy" onclick="copyToClipboard('landing-hero-b')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Hero Section</h3>
+                    <span class="badge">Solução</span>
+                    <p>Foca na solução (qualidade + preço justo).</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('landing-hero-c')">Ver Versão C</button>
+                        <button class="btn-copy" onclick="copyToClipboard('landing-hero-c')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Seção: Por Que FIO Natural</h3>
+                    <span class="badge">3 Colunas</span>
+                    <p>Natural + Origem Conhecida + Qualidade Garantida.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('landing-why')">Ver Seção</button>
+                        <button class="btn-copy" onclick="copyToClipboard('landing-why')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Seção: A IA</h3>
+                    <span class="badge">Educação</span>
+                    <p>Explica como a IA recomenda e o resultado esperado.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('landing-ia')">Ver Seção</button>
+                        <button class="btn-copy" onclick="copyToClipboard('landing-ia')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Seção: Prova Social</h3>
+                    <span class="badge">Testemunhos</span>
+                    <p>3 testemunhos reais de clientes satisfeitas.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('landing-testimonials')">Ver Testemunhos</button>
+                        <button class="btn-copy" onclick="copyToClipboard('landing-testimonials')">📋</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WHATSAPP SECTION -->
+        <div id="whatsapp" class="section">
+            <h2>💬 WhatsApp Templates</h2>
+
+            <div class="grid">
+                <div class="card">
+                    <h3>Primeira Compra</h3>
+                    <span class="badge">Welcome</span>
+                    <p>Recebe customer novo e oferece ajuda da IA.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('whatsapp-1')">Ver Template</button>
+                        <button class="btn-copy" onclick="copyToClipboard('whatsapp-1')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Carrinho Abandonado</h3>
+                    <span class="badge">Retorno</span>
+                    <p>6h após abandono, oferece ajuda sem pressão.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('whatsapp-2')">Ver Template</button>
+                        <button class="btn-copy" onclick="copyToClipboard('whatsapp-2')">📋</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Pós-Compra</h3>
+                    <span class="badge">Confirmação</span>
+                    <p>Confirmação de pedido com rastreamento.</p>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="openModal('whatsapp-3')">Ver Template</button>
+                        <button class="btn-copy" onclick="copyToClipboard('whatsapp-3')">📋</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TESTE SECTION -->
+        <div id="teste" class="section">
+            <h2>🧪 Plano de Teste (4 Semanas)</h2>
+
+            <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+                <h3 style="color: #4D4F4C; margin-bottom: 20px;">Framework de Testes A/B</h3>
+
+                <div style="margin-bottom: 30px;">
+                    <h4 style="color: #8FA297; margin-bottom: 10px;">📅 Semana 1: Kick-off</h4>
+                    <ul style="margin-left: 20px; color: #555; line-height: 1.8;">
+                        <li>Google Ads: Versão A vs B (50% budget cada)</li>
+                        <li>Facebook: Vídeo (V.A) + Carousel (V.B)</li>
+                        <li>Email: Welcome A vs B (50% lista cada)</li>
+                    </ul>
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <h4 style="color: #8FA297; margin-bottom: 10px;">📊 Semana 2: Acompanhamento</h4>
+                    <ul style="margin-left: 20px; color: #555; line-height: 1.8;">
+                        <li>Acompanhar métrica: CTR, Conversão, ROAS</li>
+                        <li>Ajustar budget para vencedores</li>
+                        <li>Manter perdedores para aprender</li>
+                    </ul>
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <h4 style="color: #8FA297; margin-bottom: 10px;">🔄 Semana 3: Expansão</h4>
+                    <ul style="margin-left: 20px; color: #555; line-height: 1.8;">
+                        <li>Testar Versão C (Google + Facebook)</li>
+                        <li>Email: Abandono de Carrinho (V.A vs V.B)</li>
+                        <li>Iniciar TikTok/Pinterest com 3 testes</li>
+                    </ul>
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <h4 style="color: #8FA297; margin-bottom: 10px;">✅ Semana 4: Consolidação</h4>
+                    <ul style="margin-left: 20px; color: #555; line-height: 1.8;">
+                        <li>Consolidar resultados (CTR, ROAS, CPC, Conversão)</li>
+                        <li>Fazer relatório de performance</li>
+                        <li>Definir estratégia para próximo mês</li>
+                    </ul>
+                </div>
+
+                <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; border-left: 4px solid #8FA297;">
+                    <h4 style="color: #4D4F4C; margin-bottom: 10px;">📈 Métricas para Acompanhar</h4>
+                    <table style="width: 100%; text-align: left; color: #555; font-size: 0.9em;">
+                        <tr style="border-bottom: 1px solid #ddd;">
+                            <td style="padding: 8px;"><strong>Google Ads</strong></td>
+                            <td>CTR 4-6% | Conv. 3-5% | CPC <R$1</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #ddd;">
+                            <td style="padding: 8px;"><strong>Facebook</strong></td>
+                            <td>ROAS 2.5:1 | CPC <R$2</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #ddd;">
+                            <td style="padding: 8px;"><strong>Email</strong></td>
+                            <td>CTR 15-20% | Conv. 5-8%</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #ddd;">
+                            <td style="padding: 8px;"><strong>Instagram</strong></td>
+                            <td>Eng. 8-12% | CTR 10-15%</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px;"><strong>Landing</strong></td>
+                            <td>Conv. 3-5% | Time on Page >2min</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <button class="close" onclick="closeModal()">&times;</button>
+            <div id="modal-body"></div>
+            <div class="modal-footer">
+                <button class="btn-copy-modal" onclick="copyModalContent()">📋 Copiar Conteúdo</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>🧵 FIO Natural - Dashboard de Criativos Ogilvy</p>
+        <p style="font-size: 0.9em; margin-top: 10px; opacity: 0.8;">Criado com estratégia Ogilvy | 49 Criativos | Pronto para Testar</p>
+    </footer>
+
+    <script>
+        // Dados dos criativos
+        const criativos = {
+            'insta-post1-a': {
+                title: 'Post 1: Gancho da Enganação - Versão A (Emocional)',
+                content: `Você sabe aquele sentimento de abrir a caixa e perceber que não é aquilo?
+
+73% das mulheres que compram cabelo online vivem isso.
+
+A gente criou FIO Natural porque seu cabelo merece verdade.
+100% natural. Origem conhecida. Qualidade garantida.
+
+Nada de misterioso. Nada de falso.
+
+Só seu cabelo.
+
+#SeuCabeloMerceVerdade #FioNatural
+
+---
+
+MÉTRICA ESPERADA: Alta engagement (comentários de validação)
+MELHOR PARA: Warm traffic, público já interessado em beleza`
+            },
+            'insta-post1-b': {
+                title: 'Post 1: Gancho da Enganação - Versão B (Provocativa)',
+                content: `Qual é o verdadeiro culpado atrás de 73% das mulheres sendo enganadas com cabelo online?
+
+A falta de transparência.
+
+Enquanto outras marcas vendem misteriosamente, a gente trouxe:
+✓ Origem comprovada
+✓ 100% natural (não falso)
+✓ Qualidade verificada
+
+Seu cabelo merece saber de onde vem.
+
+#FioNatural #Transparência
+
+---
+
+MÉTRICA ESPERADA: Alto CTR (curiosidade, confrontação)
+MELHOR PARA: Cold traffic, pessoas desconfiadas`
+            },
+            'insta-post1-c': {
+                title: 'Post 1: Gancho da Enganação - Versão C (Funcional)',
+                content: `FATO: 73% das mulheres foram enganadas ao comprar cabelo online
+
+SOLUÇÃO: FIO Natural
+
+Cabelo 100% natural ✓
+Origem brasileira rastreada ✓
+Qualidade garantida em cada lote ✓
+Preço justo (sempre) ✓
+
+Seu cabelo não é mistério. É direito.
+
+#FioNatural #SemEnganação
+
+---
+
+MÉTRICA ESPERADA: Conversão direta (leads + vendas)
+MELHOR PARA: Retargeting, público já conhecedor da marca`
+            },
+            'insta-post2-a': {
+                title: 'Post 2: IA - Versão A (Educativa)',
+                content: `Sua maior dúvida ao comprar cabelo online?
+
+"Será que é o tamanho certo?"
+"Quantas gramas mesmo?"
+"Que textura combina comigo?"
+
+A gente resolveu com IA.
+
+Na FIO Natural, você tem IA pessoal que recomenda exatamente o que você precisa.
+
+Porque a melhor compra é aquela em que você escolhe certo na primeira vez.
+
+(Nem toda marca investe em você escolher bem. A gente sim.)
+
+#FioNatural #SemMais #PreçoJusto
+
+---
+
+TOM: Amiga que entende
+OBJETIVO: Trust building
+MELHOR PARA: Cold traffic educado`
+            },
+            'insta-post2-b': {
+                title: 'Post 2: IA - Versão B (Prova Social)',
+                content: `"Toda vez que eu comprava cabelo online, recebia errado.
+Aí descobri que na FIO Natural tem IA que recomenda.
+
+Fiz as perguntas, ela analisou e recomendou.
+Recebi e pensei: finalmente perfeito."
+
+— Marina P., São Paulo
+
+Sua IA pessoal de cabelo.
+Na FIO Natural, você escolhe certo.
+
+#FioNatural #SemArrepend
+
+---
+
+TOM: Depoimento real
+OBJETIVO: Conversão via confiança
+MELHOR PARA: Warm traffic, retargeting`
+            },
+            'insta-post2-c': {
+                title: 'Post 2: IA - Versão C (Provocativa)',
+                content: `Outras marcas têm retorno.
+A gente tem IA para você não precisar de retorno.
+
+Porque se você escolher certo, não precisa devolver nada.
+
+Na FIO Natural, a IA analisa sua textura, seu tipo, sua necessidade.
+E recomenda exatamente o que você precisa.
+
+Primeira compra = acerto garantido.
+
+#FioNatural #SemDúvida
+
+---
+
+TOM: Confiante, desafiador
+OBJETIVO: Conversão alta
+MELHOR PARA: Retargeting, público com dúvida`
+            },
+            'insta-post3-a': {
+                title: 'Post 3: Origem - Versão A (Patriótica)',
+                content: `De onde vem seu cabelo?
+
+Na maioria dos casos online: ninguém sabe.
+
+Na FIO Natural:
+✓ Origem brasileira
+✓ Rastreada
+✓ 100% natural
+✓ Qualidade garantida
+
+Porque cabelo não é mistério. É segurança.
+
+Seu cabelo, sua história.
+
+#CabeloBrasileiro #Transparência #FioNatural
+
+---
+
+TOM: Patriótico, inclusivo
+OBJETIVO: Construir pride de marca
+MELHOR PARA: Público geral, nacionalista`
+            },
+            'insta-post3-b': {
+                title: 'Post 3: Origem - Versão B (Fato + Benefício)',
+                content: `Seu cabelo vem de onde?
+
+RESPOSTA HONESTA: Origem brasileira comprovada.
+
+Por quê isso importa?
+- Você sabe exatamente de onde vem
+- Zero chance de ser falso/misturado
+- Qualidade controlada desde a origem
+- Rastreamento total
+
+Transparência não é marketing. É responsabilidade.
+
+#FioNatural
+
+---
+
+TOM: Informativo, responsável
+OBJETIVO: Trust via educação
+MELHOR PARA: Cold traffic, pessoas analíticas`
+            },
+            'insta-post3-c': {
+                title: 'Post 3: Origem - Versão C (Emocional)',
+                content: `Há quanto tempo você não sabe exatamente o que está comprando?
+
+Com cabelo online: você não sabe a origem, a procedência, a qualidade real.
+
+Na FIO Natural, você sabe tudo.
+
+Porque quando você conhece a história do seu cabelo, você confia nele.
+
+Origem brasileira. Rastreada. De verdade.
+
+#FioNatural #SeuCabelo
+
+---
+
+TOM: Emocional, conectado
+OBJETIVO: Confiança através da história
+MELHOR PARA: Audience feminina, consciente`
+            },
+            'insta-post4-a': {
+                title: 'Post 4: Democratização - Versão A (Inclusiva)',
+                content: `Qualidade não é privilégio de quem gasta mais.
+
+Beleza não é classe.
+
+Na FIO Natural, mulheres de todos os tipos, cores e estilos têm acesso a cabelo de verdade.
+Selecionado. Garantido. Com preço justo.
+
+Porque seu cabelo merece verdade.
+
+Não importa quanto você gasta.
+
+#TodosMerecem #SeuCabeloMerceVerdade #FioNatural
+
+---
+
+TOM: Inclusivo, aspiracional
+OBJETIVO: Conexão com audiência broader
+MELHOR PARA: Mulheres classe média-baixa, inclusivas`
+            },
+            'insta-post4-b': {
+                title: 'Post 4: Democratização - Versão B (Provocativa)',
+                content: `Enquanto outras cobram premium pela honestidade...
+
+A gente cobra pelo cabelo.
+
+A transparência é de graça.
+
+100% natural, origem conhecida, qualidade garantida.
+E preço justo, sempre.
+
+Porque cabelo bom não é para milionárias.
+É para mulheres que não aceitam enganação.
+
+#FioNatural #JustoNãoÉCaro
+
+---
+
+TOM: Provocativo, crítico
+OBJETIVO: Diferenciação clara vs concorrência
+MELHOR PARA: Millennials/Gen Z, anticapitalista`
+            },
+            'insta-post4-c': {
+                title: 'Post 4: Democratização - Versão C (Aspiracional)',
+                content: `Você merece:
+✓ Cabelo de qualidade
+✓ Sem ser enganada
+✓ Com preço acessível
+✓ Com origem comprovada
+
+Não é sonho. É FIO Natural.
+
+Porque toda mulher merece confiança no que compra.
+
+#FioNatural #SuaBeleza
+
+---
+
+TOM: Aspiracional, empoderador
+OBJETIVO: Mostrar merecimento
+MELHOR PARA: Mulheres 25-40, profissionais`
+            },
+            'email-welcome-a': {
+                title: 'Email Welcome - Versão A (Educativa)',
+                content: `SUBJECT: "Bem-vinda! Deixe a IA FIO Natural te ajudar 💚"
+
+Oi [Nome],
+
+Você acaba de entrar em um lugar diferente.
+
+Aqui, a gente não vende mistério.
+
+Vendemos cabelo de verdade. Origem conhecida. Qualidade garantida. Preço justo.
+
+Antes de você comprar qualquer coisa, deixe nossa IA te conhecer melhor:
+
+👉 Qual é seu tipo de cabelo?
+👉 O que você quer alcançar?
+👉 Qual é sua experiência com extensões?
+
+Com essas informações, a gente recomenda exatamente o que você precisa.
+
+[BOTÃO: Conhecer a IA]
+
+Porque a melhor compra é aquela em que você escolhe certo.
+
+Seu cabelo merece verdade.
+
+— FIO Natural
+
+---
+
+TAXA ESPERADA: Alta (CTR 15-20%, conversão 5-8%)
+MELHOR PARA: Leads frios, pessoas educáveis`
+            },
+            'email-welcome-b': {
+                title: 'Email Welcome - Versão B (Provocativa)',
+                content: `SUBJECT: "Você foi enganada ao comprar cabelo online?"
+
+Oi [Nome],
+
+Se respondeu SIM, você é 1 em 3.
+
+73% das mulheres que compram cabelo online são enganadas.
+
+Nós criamos FIO Natural para acabar com isso.
+
+Diferencial:
+✓ 100% natural (não falso)
+✓ Origem comprovada (você sabe de onde vem)
+✓ Qualidade verificada (cada lote passa por curadoria)
+✓ Preço justo (sempre)
+
+Quer nunca mais ser enganada?
+
+[BOTÃO: Explorar FIO Natural]
+
+Seu cabelo merece verdade.
+
+— FIO Natural
+
+---
+
+TAXA ESPERADA: Média (CTR 12-15%, conversão 4-6%)
+MELHOR PARA: Retargeting, warm traffic`
+            },
+            'email-abandon-a': {
+                title: 'Email Abandono de Carrinho - Versão A (Suave)',
+                content: `SUBJECT: "Deixou algo no carrinho? Deixa a gente te ajudar 💚"
+
+Oi [Nome],
+
+Você adicionou [PRODUTO] no carrinho.
+
+Se ficou em dúvida sobre tamanho, textura ou quantidade, a gente te ajuda!
+
+Deixa a IA FIO Natural recomendar exatamente o que você precisa:
+
+[BOTÃO: Usar a IA]
+
+Ou conversa direto com a gente:
+[CHAT / EMAIL]
+
+Seu cabelo merece verdade. Deixa a gente garantir que você escolhe certo.
+
+— FIO Natural
+
+---
+
+TOM: Suave, sem pressão
+OBJETIVO: Oferecer ajuda
+MELHOR PARA: Pessoas indecisos`
+            },
+            'email-abandon-b': {
+                title: 'Email Abandono de Carrinho - Versão B (Urgência)',
+                content: `SUBJECT: "Deixou [PRODUTO] no carrinho (aproveita: -10% agora)"
+
+Oi [Nome],
+
+Seu [PRODUTO] FIO Natural está reservado.
+
+Para você escolher com segurança, temos:
+✓ IA de recomendação
+✓ Chat com especialistas
+✓ Garantia de satisfação
+
+Plus: -10% em pedidos hoje.
+
+[BOTÃO: Completar Compra com -10%]
+
+Seu cabelo merece verdade (e um desconto). 💚
+
+— FIO Natural
+
+---
+
+TOM: Urgência suave com incentivo
+OBJETIVO: Conversão imediata
+MELHOR PARA: Carrinho alto, pessoas sensíveis a desconto`
+            },
+            'email-poscompra-a': {
+                title: 'Email Pós-Compra - Versão A (Educativa)',
+                content: `SUBJECT: "Seu cabelo chegou! Dicas de cuidado exclusivas 💚"
+
+Oi [Nome],
+
+Você recebeu sua extensão FIO Natural!
+
+Para sua extensão durar o máximo possível:
+
+✓ Lave com shampoo/condicionador neutro
+✓ Seque com toalha (sem torcer)
+✓ Penteie com cuidado
+✓ Evite calor excessivo
+
+[BOTÃO: Ver Tutorial Completo]
+
+Se tiver qualquer dúvida, estamos aqui.
+
+Obrigada por escolher verdade! 🧵💚
+
+— FIO Natural
+
+---
+
+OBJETIVO: Aumentar lifetime value
+MELHOR PARA: Retenção, satisfação`
+            },
+            'email-poscompra-b': {
+                title: 'Email Pós-Compra - Versão B (Prova Social)',
+                content: `SUBJECT: "[Nome], você consegue! Mostre seu cabelo FIO Natural 📸"
+
+Oi [Nome],
+
+Você recebeu sua extensão FIO Natural!
+
+Estou muito curiosa para ver como ficou.
+
+Se você tirar fotos do seu resultado, a gente adora compartilhar:
+
+📸 Marque @fionatural
+
+Suas histórias inspiram outras mulheres a escolher verdade.
+
+Beijos,
+[Assinatura]
+
+— FIO Natural
+
+---
+
+OBJETIVO: UGC, social proof, engagement
+MELHOR PARA: Growth, conteúdo orgânico`
+            },
+            'ads-google-a': {
+                title: 'Google Ads - Versão A (Dados)',
+                content: `HEADLINES:
+1. "73% das mulheres são enganadas ao comprar cabelo online"
+2. "FIO Natural: 100% natural, origem rastreada"
+3. "Qualidade garantida, preço justo. Sempre."
+
+DESCRIPTION:
+"Extensão capilar brasileira sem enganação. Cada lote passa por curadoria. IA para ajudar na escolha. Compre com confiança."
+
+CTA: Comprar Agora
+
+---
+
+MÉTRICA ESPERADA: CTR 3-5%, Conversão 2-4%
+MELHOR PARA: Cold traffic, pessoas lógicas`
+            },
+            'ads-google-b': {
+                title: 'Google Ads - Versão B (Benefício)',
+                content: `HEADLINES:
+1. "Recupere confiança ao comprar cabelo online"
+2. "IA recomenda exatamente o tamanho certo"
+3. "100% natural, origem conhecida, preço justo"
+
+DESCRIPTION:
+"Primeira vez que recebe cabelo certo? FIO Natural garante. Análise de IA + curadoria de qualidade. Zero arrependimento."
+
+CTA: Descobrir Como Funciona
+
+---
+
+MÉTRICA ESPERADA: CTR 4-6%, Conversão 3-5%
+MELHOR PARA: Warm traffic, pessoas já interessadas`
+            },
+            'ads-google-c': {
+                title: 'Google Ads - Versão C (Provocativa)',
+                content: `HEADLINES:
+1. "Cansada de ser enganada ao comprar cabelo?"
+2. "FIO Natural: A marca que não mente"
+3. "Transparência total. Qualidade garantida."
+
+DESCRIPTION:
+"Cabelo brasileiro 100% natural. Origem comprovada. Rastreamento completo. A honestidade que você merecia."
+
+CTA: Começar Agora
+
+---
+
+MÉTRICA ESPERADA: CTR 5-7%, Conversão 2-3% (alto engagement, conversor médio)
+MELHOR PARA: Retargeting, pessoas frustradas`
+            },
+            'ads-fb-video': {
+                title: 'Facebook Ads - Vídeo Curto (3-5s)',
+                content: `[0-1s] Mulher abrindo caixa de cabelo (esperança)
+[1-2s] Cabelo não é o que esperava (decepção)
+[2-4s] Efeito sonoro de "fail"
+[4-5s] Transição: Logo FIO Natural
+[5-15s] Copy em tela:
+  "73% das mulheres foram enganadas"
+  "Na FIO Natural? Zero enganação"
+  "100% natural. Origem conhecida. Preço justo."
+[15s] CTA: "Conheça FIO Natural"
+
+ÁUDIO: Sons de qualidade vs. fail + música moderna (confident)
+OBJETIVO: Awareness, Views
+MELHOR PARA: Cold traffic, desktop/mobile`
+            },
+            'ads-fb-carousel': {
+                title: 'Facebook Ads - Carousel',
+                content: `CARD 1 - PROBLEMA:
+Imagem: Mulher triste abrindo caixa errada
+Copy: "73% das mulheres foram enganadas ao comprar cabelo online"
+CTA: Saber Mais
+
+CARD 2 - DIFERENCIAL:
+Imagem: Infográfico FIO Natural
+Copy: "100% natural. Origem conhecida. Qualidade garantida."
+CTA: Descobrir
+
+CARD 3 - SOLUÇÃO:
+Imagem: Mulher feliz com cabelo FIO Natural
+Copy: "Escolha certa na primeira vez com nossa IA"
+CTA: Comprar Agora
+
+---
+
+OBJETIVO: Conversão
+MELHOR PARA: Warm traffic, retargeting`
+            },
+            'ads-fb-image': {
+                title: 'Facebook Ads - Imagem Estática',
+                content: `IMAGEM:
+Close do cabelo FIO Natural (qualidade evidente, brilho natural)
+
+COPY:
+"Seu cabelo merece verdade.
+
+100% natural. Origem conhecida. Preço justo.
+
+Use nossa IA para escolher certo na primeira vez."
+
+CTA: Comprar Agora
+
+---
+
+OBJETIVO: Conversão simples
+MELHOR PARA: Audience já convertido (lookalike)`
+            },
+            'tiktok-1': {
+                title: 'TikTok/Reels - Hook: Enganação Real (15-30s)',
+                content: `[0-2s] Mulher abrindo caixa de cabelo (esperança)
+[2-4s] Cabelo não é o que esperava (decepção)
+[4-6s] Efeito sonoro de "fail"
+[6-8s] Transição: Logo FIO Natural
+[8-15s] Copy em tela:
+  "73% das mulheres foram enganadas"
+  "Na FIO Natural? Zero enganação"
+  "100% natural. Origem conhecida. Preço justo."
+[15s] CTA: "Conheça FIO Natural"
+
+ÁUDIO: Sons de qualidade vs. fail + música moderna (confident)
+HASHTAGS: #CabeloOnline #SemEnganação #FioNatural #Verdade
+OBJETIVO: Views, Engagement, Shares`
+            },
+            'tiktok-2': {
+                title: 'TikTok/Reels - IA em Ação (30s)',
+                content: `[0-5s] Mulher em dúvida (pensativo emoji)
+  "Qual tamanho certo? Qual textura?"
+[5-10s] Timelapse: Ela respondendo perguntas da IA
+  (Perguntas aparecem na tela)
+[10-15s] IA processando (loading visual)
+[15-20s] IA recomenda resultado
+[20-25s] Mulher recebe, abre, sorri (satisfação)
+[25-30s] Logo + CTA: "Sua IA pessoal de cabelo"
+
+EFEITO VISUAL: Moderno, rápido, satisfatório
+ÁUDIO: Som de tech + música uplifting
+OBJETIVO: Confiança, demonstração`
+            },
+            'tiktok-3': {
+                title: 'TikTok/Reels - Origem Rastreada (20s)',
+                content: `[0-5s] Mulher perguntando: "De onde vem seu cabelo?"
+[5-10s] Resposta de outras marcas: "?!?!" (confuso)
+[10-15s] FIO Natural resposta:
+  "Origem brasileira"
+  "Rastreada"
+  "100% natural"
+  (Mapa Brasil, checkmarks aparecendo)
+[15-20s] CTA: "Conhecer origem do seu cabelo"
+
+OBJETIVO: Educação, diferenciação
+MELHOR PARA: Público consciente`
+            },
+            'pinterest-1': {
+                title: 'Pinterest - Educativo',
+                content: `TÍTULO PIN: "Os 3 Sinais de Cabelo Falso Online (e como reconhecer)"
+
+IMAGEM:
+Infográfico com 3 comparações lado-a-lado
+- Cabelo falso vs. FIO Natural (qualidade)
+- Origem desconhecida vs. Rastreado
+- Preço suspeito vs. Preço justo
+
+DESCRIÇÃO:
+"Descubra os sinais de alerta ao comprar cabelo online. Saiba reconhecer cabelo falso e como escolher direito. FIO Natural: 100% natural, origem comprovada, qualidade garantida."
+
+ALT TEXT: "Guia: Como reconhecer cabelo falso vs. natural"
+
+CTA: "Aprender mais"
+
+---
+
+OBJETIVO: Educação, tráfego
+MELHOR PARA: Search, descoberta`
+            },
+            'pinterest-2': {
+                title: 'Pinterest - Inspiração Visual',
+                content: `IMAGEM GRANDE:
+Mulher com cabelo FIO Natural em close (qualidade evidente)
+
+TEXTO SOBREPOSTO:
+"Seu Cabelo Merece Verdade"
+"100% Natural. Origem Conhecida. Preço Justo."
+
+CTA: "Comprar Agora"
+
+DESCRIÇÃO:
+"Extensão capilar FIO Natural: 100% natural, origem brasileira rastreada, qualidade garantida com preço justo. Sem enganação, sem mistério."
+
+---
+
+OBJETIVO: Inspiração, conversão
+MELHOR PARA: Discovery, lifestyle pins`
+            },
+            'youtube-1': {
+                title: 'YouTube Shorts - Educativo (15-60s)',
+                content: `[0-3s] "Sabe por que 73% das mulheres foram enganadas ao comprar cabelo online?"
+
+[3-6s] "Porque a gente não sabe fazer perguntas certas."
+
+[6-10s] "Na FIO Natural, você tem IA que faz as perguntas certas:
+- Qual é seu tipo de cabelo?
+- O que você quer alcançar?
+- Qual textura combina?"
+
+[10-15s] "A IA recomenda exatamente o que você precisa."
+
+[15-20s] "Resultado: você escolhe certo na primeira vez."
+
+[20-25s] "FIO Natural: Seu cabelo merece verdade."
+
+---
+
+OBJETIVO: Educação, demonstração
+MELHOR PARA: Cold audience, discovery`
+            },
+            'youtube-2': {
+                title: 'YouTube Shorts - Proof (15-30s)',
+                content: `[0-5s] Mulher falando:
+"Eu comprava cabelo online e era sempre errado."
+
+[5-10s] "Descobri FIO Natural, usei a IA deles..."
+
+[10-15s] "Recebi e pensei: finalmente acertei!"
+
+[15-25s] Close do cabelo em qualidade
+
+[25-30s] "FIO Natural: 100% natural, origem conhecida, preço justo."
+
+---
+
+OBJETIVO: Proof, trust
+MELHOR PARA: Conversão via testemunho`
+            },
+            'whatsapp-1': {
+                title: 'WhatsApp - Primeira Compra',
+                content: `Oi! 👋 Tudo bem?
+
+Seja bem-vinda à FIO Natural!
+
+Você sabe qual tamanho de cabelo combina com você?
+
+Deixa nossa IA te ajudar:
+
+👉 Qual é seu tipo de cabelo?
+👉 O que você quer alcançar?
+👉 Qual é sua experiência com extensões?
+
+Responda e a gente recomenda exatamente o que você precisa.
+
+[BOTÃO: Começar Recomendação]
+
+Seu cabelo merece verdade! 💚
+
+---
+
+USO: Automação ao inscrever
+OBJETIVO: Converter para venda`
+            },
+            'whatsapp-2': {
+                title: 'WhatsApp - Carrinho Abandonado (6h depois)',
+                content: `Oiie! 💚
+
+Deixou algo no carrinho?
+
+Não consegue decidir qual tamanho?
+
+Deixa a gente te ajudar!
+
+Nossa IA analisa seu tipo de cabelo e recomenda o tamanho/textura certos.
+
+[BOTÃO: Usar IA]
+
+Ou conversa direto com a gente! 💬
+
+Seu cabelo merece verdade!
+
+---
+
+USO: Automação 6h após abandono
+OBJETIVO: Retorno, conversão`
+            },
+            'whatsapp-3': {
+                title: 'WhatsApp - Pós-Compra (Confirmação)',
+                content: `Pedido confirmado! ✓
+
+Seu cabelo FIO Natural está sendo selecionado com cuidado.
+
+Acompanhamento:
+📍 Origem: Confirmada
+📍 Qualidade: Verificada
+📍 Rastreamento: Ativo
+
+[BOTÃO: Rastrear Pedido]
+
+Seus cabelo chega em [X] dias.
+
+Quando receber, tire fotos! Suas histórias nos inspiram! 📸
+
+Obrigada por escolher verdade! 💚
+
+---
+
+USO: Automação ao confirmar pagamento
+OBJETIVO: Satisfação, retenção, UGC`
+            },
+            'landing-hero-a': {
+                title: 'Landing Page - Hero Section (Confiança)',
+                content: `HEADLINE:
+"Seu Cabelo Merece Verdade"
+
+SUBHEADLINE:
+"100% natural. Origem conhecida. Qualidade garantida. (E preço justo, sempre.)"
+
+CTA PRINCIPAL:
+"Ver Coleção"
+
+VISUAL:
+Cabelo em close, brilho natural, qualidade evidente
+
+OBJETIVO: Emocional, trust building
+MELHOR PARA: Warm traffic`
+            },
+            'landing-hero-b': {
+                title: 'Landing Page - Hero Section (Problema)',
+                content: `HEADLINE:
+"Cansada de ser Enganada ao Comprar Cabelo Online?"
+
+SUBHEADLINE:
+"73% das mulheres experimentam isso. Na FIO Natural, isso não acontece."
+
+CTA PRINCIPAL:
+"Descobrir Como"
+
+VISUAL:
+Split - cabelo falso (esquerdo) vs. FIO Natural (direito)
+
+OBJETIVO: Problem aware, conversão
+MELHOR PARA: Cold traffic, frustrados`
+            },
+            'landing-hero-c': {
+                title: 'Landing Page - Hero Section (Solução)',
+                content: `HEADLINE:
+"Cabelo de Qualidade Sem Pagar Premium"
+
+SUBHEADLINE:
+"Origem brasileira rastreada. Curadoria de qualidade. IA para escolher certo."
+
+CTA PRINCIPAL:
+"Começar Agora"
+
+VISUAL:
+Mulher satisfeita abrindo caixa (unboxing positivo)
+
+OBJETIVO: Solução-focada, conversão rápida
+MELHOR PARA: Hot traffic, já decidido`
+            },
+            'landing-why': {
+                title: 'Landing Page - Seção: Por Que FIO Natural',
+                content: `3 COLUNAS:
+
+COLUNA 1 - Ícone: Fio/Fluidez
+TÍTULO: "100% Natural"
+DESCRIÇÃO: "Cabelo brasileiro íntegro. Sem falso, sem mistério."
+
+COLUNA 2 - Ícone: Movimento
+TÍTULO: "Origem Conhecida"
+DESCRIÇÃO: "Rastreado. Você sabe de onde vem. Transparência total."
+
+COLUNA 3 - Ícone: Confiança (escudo)
+TÍTULO: "Qualidade Garantida"
+DESCRIÇÃO: "Passa por curadoria de padrão. Cada lote é verificado."
+
+---
+
+OBJETIVO: Comunicar 3 pilares
+MELHOR PARA: Educação rápida`
+            },
+            'landing-ia': {
+                title: 'Landing Page - Seção: A IA',
+                content: `HEADLINE:
+"Sua IA Pessoal de Cabelo"
+
+BODY:
+Você já comprou cabelo online e recebeu errado?
+
+Tamanho diferente. Textura que não era aquela.
+
+Na FIO Natural, você tem IA que recomenda exatamente o que você precisa:
+
+✓ Analisa seu tipo de cabelo
+✓ Entende o que você quer alcançar
+✓ Recomenda tamanho e quantidade certa
+✓ Sugere textura baseado em você
+
+Resultado: você abre a caixa e pensa "perfeito".
+
+Não surpresa. Certeza.
+
+CTA: "Usar IA Agora"
+
+---
+
+OBJETIVO: Demonstração de diferencial
+MELHOR PARA: Conversão via IA`
+            },
+            'landing-testimonials': {
+                title: 'Landing Page - Prova Social: Testemunhos',
+                content: `TESTEMUNHO 1:
+"Comprei cabelo online 3 vezes e todas as 3 foi errado.
+Na FIO Natural foi a primeira vez que realmente confiei.
+O cabelo chegou exatamente como prometido."
+— Marina P., São Paulo
+
+TESTEMUNHO 2:
+"Eu tinha medo de comprar pela internet.
+A IA me ajudou a escolher o tamanho e textura certos.
+Resultado: pareceu que um profissional curou para mim."
+— Carolina M., Rio de Janeiro
+
+TESTEMUNHO 3:
+"Não é premium, mas é de qualidade.
+O preço é acessível, mas o resultado é profissional.
+Exatamente o que eu queria."
+— Beatriz T., Belo Horizonte
+
+---
+
+OBJETIVO: Prova social, conversão
+MELHOR PARA: Seal the deal`
+            }
+        };
+
+        // Funções
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            // Remove active from all buttons
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            // Add active to clicked button
+            event.target.classList.add('active');
+        }
+
+        function openModal(criativoId) {
+            const modal = document.getElementById('modal');
+            const criativo = criativos[criativoId];
+            if (criativo) {
+                document.getElementById('modal-body').innerHTML = `
+                    <h2>${criativo.title}</h2>
+                    <div class="modal-body">
+                        <pre>${criativo.content}</pre>
+                    </div>
+                `;
+                modal.classList.add('active');
+                // Store current ID for copy
+                modal.dataset.currentId = criativoId;
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        function copyToClipboard(criativoId) {
+            const criativo = criativos[criativoId];
+            if (criativo) {
+                navigator.clipboard.writeText(criativo.content).then(() => {
+                    showSuccessMessage('Conteúdo copiado para a área de transferência!');
+                });
+            }
+        }
+
+        function copyModalContent() {
+            const modal = document.getElementById('modal');
+            const criativoId = modal.dataset.currentId;
+            copyToClipboard(criativoId);
+        }
+
+        function showSuccessMessage(message) {
+            const msg = document.createElement('div');
+            msg.className = 'success-message';
+            msg.textContent = message;
+            msg.style.display = 'block';
+            document.body.insertBefore(msg, document.body.firstChild);
+            setTimeout(() => msg.remove(), 3000);
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
