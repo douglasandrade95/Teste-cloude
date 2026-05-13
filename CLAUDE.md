@@ -6,8 +6,9 @@ An intelligent creative director that transforms raw videos into cinematic, emot
 ## 🏗️ Architecture Overview
 
 ### Tech Stack
-- **Frontend:** React 18 + TypeScript + TailwindCSS
+- **Frontend:** React 18 + TypeScript + TailwindCSS + Remotion
 - **Backend:** FastAPI (Python) + Node.js microservices
+- **Video Rendering:** Remotion (React framework for video)
 - **Video Processing:** FFmpeg, MoviePy, librosa
 - **AI/ML:** Claude API, Google Vertex AI, Replicate
 - **Storage:** AWS S3 (configurable)
@@ -86,6 +87,7 @@ docker-compose up
 
 | Component | Tech | Reason |
 |-----------|------|--------|
+| Video rendering | Remotion | React-based, programmatic video composition |
 | Video processing | FFmpeg + MoviePy | Industry standard, powerful |
 | Speech-to-text | OpenAI Whisper | Accurate, multilingual |
 | Emotional analysis | Claude API | Best for nuanced creative intent |
@@ -97,8 +99,8 @@ docker-compose up
 ## 🎯 Development Guidelines
 
 ### Branching
-- All work on `claude/auto-video-editor-afHDl`
-- Commit message format: `[PHASE1] Feature description`
+- All work on `claude/remotion-setup-01IBu`
+- Commit message format: `[PHASE1] Feature description` or `[REMOTION] Feature description`
 
 ### Code Quality
 - Type hints everywhere (Python & TypeScript)
