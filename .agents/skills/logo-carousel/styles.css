@@ -1,0 +1,95 @@
+/* Logo Carousel Styles */
+
+.logo-carousel {
+  width: 100%;
+  overflow: hidden;
+  background: transparent;
+  padding: 24px 0;
+}
+
+.logo-carousel-track {
+  display: flex;
+  gap: 48px;
+  will-change: transform;
+}
+
+@keyframes logo-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Logo Container */
+.logo-carousel > div > a {
+  display: block;
+  text-decoration: none;
+  border: none;
+  width: 100%;
+  height: 100%;
+  transition: opacity 0.3s ease;
+  cursor: pointer;
+}
+
+.logo-carousel > div > a:hover {
+  opacity: 0.8;
+}
+
+.logo-carousel img {
+  display: block;
+  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  margin: 0 !important;
+}
+
+/* Dark mode support */
+.logo-carousel .dark\:hidden {
+  display: block;
+}
+
+.dark .logo-carousel .dark\:hidden {
+  display: none;
+}
+
+.dark .logo-carousel .hidden {
+  display: none;
+}
+
+.dark .logo-carousel .dark\:block {
+  display: block;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .logo-carousel {
+    padding: 16px 0;
+  }
+
+  .logo-carousel-track {
+    gap: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-carousel {
+    padding: 12px 0;
+  }
+
+  .logo-carousel-track {
+    gap: 24px;
+  }
+}
+
+/* Accessibility */
+.logo-carousel a:focus {
+  outline: 2px solid #4F46E5;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.logo-carousel a:focus:not(:focus-visible) {
+  outline: none;
+}

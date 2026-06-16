@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Junie",
+    "description": "Junie is an LLM-agnostic coding agent built for real-world development.",
+    "url": "https://junie.jetbrains.com/",
+    "lightSrc": "/images/logos/junie/junie-logo-on-white.svg",
+    "darkSrc": "/images/logos/junie/junie-logo-on-dark.svg",
+    "instructionsUrl": "https://junie.jetbrains.com/docs/agent-skills.html"
+  },
+  {
+    "name": "Claude Code",
+    "description": "Claude Code is an agentic coding tool that reads your codebase, edits files, runs commands, and integrates with your development tools.",
+    "url": "https://claude.ai/code",
+    "lightSrc": "/images/logos/claude-code/Claude-Code-logo-Slate.svg",
+    "darkSrc": "/images/logos/claude-code/Claude-Code-logo-Ivory.svg",
+    "instructionsUrl": "https://code.claude.com/docs/en/skills"
+  },
+  {
+    "name": "GitHub Copilot",
+    "description": "GitHub Copilot works alongside you directly in your editor, suggesting whole lines or entire functions for you.",
+    "url": "https://github.com/",
+    "lightSrc": "/images/logos/github/GitHub_Lockup_Dark.svg",
+    "darkSrc": "/images/logos/github/GitHub_Lockup_Light.svg",
+    "instructionsUrl": "https://docs.github.com/en/copilot/concepts/agents/about-agent-skills"
+  },
+  {
+    "name": "Cursor",
+    "description": "Cursor is an AI editor and coding agent built for the modern developer.",
+    "url": "https://cursor.com/",
+    "lightSrc": "/images/logos/cursor/LOCKUP_HORIZONTAL_2D_LIGHT.svg",
+    "darkSrc": "/images/logos/cursor/LOCKUP_HORIZONTAL_2D_DARK.svg",
+    "instructionsUrl": "https://cursor.com/docs/context/skills"
+  },
+  {
+    "name": "OpenHands",
+    "description": "OpenHands is the open platform for cloud coding agents.",
+    "url": "https://openhands.dev/",
+    "lightSrc": "/images/logos/openhands/openhands-logo-light.svg",
+    "darkSrc": "/images/logos/openhands/openhands-logo-dark.svg",
+    "instructionsUrl": "https://docs.openhands.dev/overview/skills"
+  }
+]
