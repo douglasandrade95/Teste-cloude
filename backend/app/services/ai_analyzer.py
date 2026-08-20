@@ -10,7 +10,7 @@ class AIAnalyzer:
     """Analyzes video content and provides creative direction using Claude."""
 
     def __init__(self, api_key: str):
-        self.client = Anthropic()
+        self.client = Anthropic(api_key=api_key)
         self.model = "claude-3-5-sonnet-20241022"
 
     async def analyze_emotional_vibe(
