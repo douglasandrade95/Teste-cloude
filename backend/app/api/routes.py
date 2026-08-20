@@ -10,9 +10,12 @@ from app.models.schemas import (
     ProjectResponse,
     EmotionalAnalysisResponse,
     VideoAnalysisResponse,
+    ImageGenerationRequest,
+    ImageGenerationResponse,
 )
 from app.services.ai_analyzer import AIAnalyzer
 from app.services.video_processor import VideoProcessor
+from app.services.fal_service import FalService
 from app.config import get_settings
 
 logger = logging.getLogger(__name__)
@@ -21,6 +24,7 @@ router = APIRouter(prefix="/api/v1", tags=["video_editor"])
 settings = get_settings()
 ai_analyzer = AIAnalyzer(settings.anthropic_api_key)
 video_processor = VideoProcessor()
+fal_service = FalService(settings.fal_key)
 
 # In-memory storage for demo (replace with database in production)
 projects = {}
@@ -181,6 +185,42 @@ async def download_video(project_id: str):
         media_type="video/mp4",
         filename=f"edited_{project['filename']}",
     )
+
+
+@router.post("/fal/generate", response_model=ImageGenerationResponse)
+async def fal_generate_image(request: ImageGenerationRequest):
+    """Queue an image generation job on fal.ai (nano-banana-2)."""
+    if not settings.fal_key:
+        raise HTTPException(status_code=503, detail="FAL_KEY not configured")
+
+    try:
+        request_id = await fal_service.submit_image_generation(
+            request.prompt, webhook_url=request.webhook_url
+        )
+        return {"request_id": request_id, "status": "queued"}
+    except Exception as e:
+        logger.error(f"fal.ai submit error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/fal/status/{request_id}")
+async def fal_generation_status(request_id: str):
+    """Check the status of a queued fal.ai job."""
+    try:
+        return await fal_service.get_status(request_id)
+    except Exception as e:
+        logger.error(f"fal.ai status error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/fal/result/{request_id}")
+async def fal_generation_result(request_id: str):
+    """Fetch the result of a completed fal.ai job."""
+    try:
+        return await fal_service.get_result(request_id)
+    except Exception as e:
+        logger.error(f"fal.ai result error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/health")

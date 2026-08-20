@@ -56,6 +56,16 @@ class EditingTaskResponse(BaseModel):
         from_attributes = True
 
 
+class ImageGenerationRequest(BaseModel):
+    prompt: str = Field(..., min_length=1, max_length=4000)
+    webhook_url: Optional[str] = None
+
+
+class ImageGenerationResponse(BaseModel):
+    request_id: str
+    status: str
+
+
 class ProcessingStatusResponse(BaseModel):
     project_id: int
     overall_progress: float
