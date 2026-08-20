@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     google_api_key: str = ""
     replicate_api_token: str = ""
+    fal_key: str = ""
 
     # AWS S3
     aws_access_key_id: str = ""
