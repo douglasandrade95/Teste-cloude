@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Upload, Sparkles, Play } from 'lucide-react'
 import toast from 'react-hot-toast'
-import axios from 'axios'
+
+import { API_URL, api, errorMessage } from '../services/api'
 
 interface Analysis {
   primary_emotion: string
@@ -52,19 +53,15 @@ export function Editor() {
     formData.append('description', 'Auto-edited video')
 
     try {
-      const response = await axios.post(
-        'http://localhost:8000/api/v1/upload',
-        formData,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        }
-      )
+      const response = await api.post('/api/v1/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
 
       setProjectId(response.data.project_id)
       setAnalysis(response.data.emotional_analysis)
-      toast.success('Video uploaded! Analysis complete.')
+      toast.success('Vídeo enviado! Análise concluída.')
     } catch (error) {
-      toast.error('Upload failed')
+      toast.error(errorMessage(error, 'Falha no upload.'))
       console.error(error)
     } finally {
       setLoading(false)
@@ -76,24 +73,22 @@ export function Editor() {
 
     setLoading(true)
     try {
-      await axios.post(`http://localhost:8000/api/v1/edit/${projectId}`)
-      toast.success('Editing started!')
+      await api.post(`/api/v1/edit/${projectId}`)
+      toast.success('Edição iniciada!')
 
       // Poll for progress
       const interval = setInterval(async () => {
-        const response = await axios.get(
-          `http://localhost:8000/api/v1/edit/${projectId}/status`
-        )
+        const response = await api.get(`/api/v1/edit/${projectId}/status`)
         setEditingProgress(response.data.progress)
 
         if (response.data.status === 'completed') {
           clearInterval(interval)
-          toast.success('Video edited successfully!')
+          toast.success('Vídeo editado com sucesso!')
           setLoading(false)
         }
       }, 2000)
     } catch (error) {
-      toast.error('Failed to start editing')
+      toast.error(errorMessage(error, 'Não consegui iniciar a edição.'))
       console.error(error)
       setLoading(false)
     }
@@ -230,7 +225,7 @@ export function Editor() {
                 Seu vídeo foi editado com sucesso
               </p>
               <a
-                href={`http://localhost:8000/api/v1/download/${projectId}`}
+                href={`${API_URL}/api/v1/download/${projectId}`}
                 className="inline-block bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-xl transition"
               >
                 Baixar Vídeo

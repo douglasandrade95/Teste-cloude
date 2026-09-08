@@ -33,6 +33,10 @@ pydub==0.25.1
 python-multipart==0.0.6
 aiofiles==23.2.1
 
+# Credential vault + provider connection tests
+cryptography==42.0.5
+httpx==0.25.2
+
 # AWS
 boto3==1.29.7
 
@@ -49,7 +53,6 @@ python-json-logger==2.0.7
 # Testing
 pytest==7.4.3
 pytest-asyncio==0.21.1
-httpx==0.25.2
 
 # Code Quality
 black==23.12.1

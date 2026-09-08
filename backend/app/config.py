@@ -22,10 +22,21 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
 
     # AI/ML APIs
+    # These are fallbacks only: keys saved through the Integrações screen live
+    # in the encrypted vault and take priority over anything set here.
     openai_api_key: str = ""
     anthropic_api_key: str = ""
     google_api_key: str = ""
     replicate_api_token: str = ""
+    groq_api_key: str = ""
+    openrouter_api_key: str = ""
+    deepseek_api_key: str = ""
+    ollama_base_url: str = "http://localhost:11434"
+
+    # Credential vault (see app/services/vault.py)
+    ave_vault_dir: str = "~/.autovideoeditor"
+    ave_master_key: str = ""  # optional: pin the encryption key via env
+    ave_admin_token: str = ""  # optional: required to edit settings remotely
 
     # AWS S3
     aws_access_key_id: str = ""
@@ -51,6 +62,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = False
+        extra = "ignore"
 
 
 @lru_cache

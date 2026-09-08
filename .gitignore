@@ -3,6 +3,13 @@
 .env.local
 .env.*.local
 
+# Credential vault — never commit encrypted secrets or the master key
+.autovideoeditor/
+*.enc
+master.key
+secrets.enc
+preferences.json
+
 # Python
 __pycache__/
 *.py[cod]

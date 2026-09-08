@@ -1,17 +1,61 @@
 import json
 import logging
-from typing import Dict, List
+from typing import Dict, List, Optional
 from anthropic import Anthropic
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_MODEL = "claude-sonnet-5"
+
+
+class MissingCredentialError(RuntimeError):
+    """No API key is configured for the active provider."""
 
 
 class AIAnalyzer:
     """Analyzes video content and provides creative direction using Claude."""
 
-    def __init__(self, api_key: str):
-        self.client = Anthropic()
-        self.model = "claude-3-5-sonnet-20241022"
+    def __init__(self, api_key: str, model: Optional[str] = None):
+        if not api_key:
+            raise MissingCredentialError(
+                "Nenhuma chave de API configurada. Abra a tela de Integrações "
+                "e cadastre uma chave antes de analisar vídeos."
+            )
+        self.client = Anthropic(api_key=api_key)
+        self.model = model or DEFAULT_MODEL
+
+    @classmethod
+    def from_configuration(cls) -> "AIAnalyzer":
+        """
+        Build an analyzer from the credential vault / environment, using the
+        provider and model selected in the Integrações screen.
+        """
+        # Imported here to keep this module importable without the API layer.
+        from app.services.preferences import load_preferences
+        from app.services.providers import resolve_key
+
+        prefs = load_preferences()
+        provider_id = prefs.get("active_provider") or "anthropic"
+        model = prefs.get("active_model") if provider_id == "anthropic" else None
+
+        api_key, source = resolve_key(provider_id)
+        if not api_key:
+            raise MissingCredentialError(
+                f"Nenhuma chave configurada para o provedor '{provider_id}'. "
+                "Cadastre uma na tela de Integrações."
+            )
+
+        if provider_id != "anthropic":
+            # Non-Anthropic providers are catalogued and testable today; the
+            # analysis client itself still speaks the Anthropic API.
+            raise MissingCredentialError(
+                f"O provedor '{provider_id}' ainda não é suportado pela análise "
+                "criativa. Selecione um modelo Claude na tela de Integrações."
+            )
+
+        logger.info("AIAnalyzer using provider=%s model=%s (key from %s)",
+                    provider_id, model or DEFAULT_MODEL, source)
+        return cls(api_key=api_key, model=model)
 
     async def analyze_emotional_vibe(
         self, vibe_description: str, video_metadata: Dict

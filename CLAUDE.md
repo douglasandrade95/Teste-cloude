@@ -125,8 +125,21 @@ docker-compose up
 - Auto-thumbnail generation
 - Platform-specific optimization
 
+## 🔑 API Keys
+
+Keys are configured through the **Integrações** screen (`/integracoes`), not in
+code. They are stored encrypted (Fernet) in `~/.autovideoeditor/secrets.enc`,
+outside the repository, and no endpoint ever returns a key in plaintext.
+Environment variables still work as a fallback; the vault takes priority.
+
+See [INTEGRACOES_API.md](./INTEGRACOES_API.md) for the full guide, including the
+free-tier providers (Gemini, Groq, OpenRouter, Ollama) and the server setup
+(`AVE_MASTER_KEY`, `AVE_ADMIN_TOKEN`).
+
 ## 🔐 Security Notes
 
+- API keys encrypted at rest, never echoed back, never committed
+- Credential endpoints are localhost-only unless `AVE_ADMIN_TOKEN` is set
 - All file uploads validated (size, format)
 - Async processing with job queues
 - API keys in environment only
