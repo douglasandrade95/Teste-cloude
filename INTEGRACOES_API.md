@@ -57,9 +57,14 @@ Se você não quer colocar cartão agora, comece por uma destas:
 | **OpenRouter** | modelos com sufixo `:free` não consomem crédito | https://openrouter.ai/keys |
 | **Ollama** | roda na sua máquina: zero custo, zero chave, nada sai do computador | https://ollama.com/download |
 
+Fora dos gratuitos, a **Kie.ai** é o caminho barato: um agregador em que uma
+chave só dá acesso a Veo, Seedance, Nano Banana e Suno, com 80 créditos grátis
+no cadastro. Chave em https://kie.ai/api-key.
+
 > Hoje a análise criativa do editor fala a API da Anthropic (Claude). Os outros
-> provedores já ficam cadastrados, testados e prontos no cofre — a troca do
-> motor de análise entra na próxima fase.
+> provedores já ficam cadastrados, testados e prontos no cofre, mas a tela não
+> deixa ativá-los para análise — ela diz o porquê em vez de deixar a edição
+> falhar depois. A troca do motor de análise entra na próxima fase.
 
 ---
 
@@ -120,6 +125,7 @@ GROQ_API_KEY=gsk_...
 OPENROUTER_API_KEY=sk-or-...
 OPENAI_API_KEY=sk-...
 DEEPSEEK_API_KEY=sk-...
+KIE_API_KEY=...
 REPLICATE_API_TOKEN=r8_...
 ```
 

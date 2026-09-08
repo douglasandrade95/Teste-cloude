@@ -240,6 +240,17 @@ async def set_active_model(
             detail=f"Configure a chave de {provider.label} antes de ativar este modelo.",
         )
 
+    if not provider.analysis_ready:
+        # Refuse here rather than letting the upload fail later with a
+        # confusing error: the analysis engine only speaks the Anthropic API.
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"A chave de {provider.label} fica guardada e testada, mas a análise "
+                "criativa ainda roda só em modelos Claude. Ative um deles para editar."
+            ),
+        )
+
     prefs = save_preferences(active_provider=provider.id, active_model=payload.model)
     logger.info("Active model set to %s / %s", prefs["active_provider"], prefs["active_model"])
     return ActiveSelection(**prefs)

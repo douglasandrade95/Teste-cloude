@@ -579,6 +579,13 @@ function ProviderDetail({
         <h3 className="mb-4 text-[11px] uppercase tracking-luxe text-bone-300">
           Modelo
         </h3>
+        {!provider.analysis_ready && (
+          <p className="mb-4 rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-xs leading-relaxed text-bone-300">
+            A chave fica guardada e testada aqui, mas a análise criativa ainda
+            roda só em modelos Claude. Estes modelos entram quando o motor de
+            análise passar a falar com outros provedores.
+          </p>
+        )}
         <div className="space-y-2">
           {provider.models.map((model) => {
             const isActive =
@@ -611,11 +618,17 @@ function ProviderDetail({
                 ) : (
                   <button
                     onClick={() => onActivate(model.id)}
-                    disabled={working || !provider.credential.configured}
+                    disabled={
+                      working ||
+                      !provider.credential.configured ||
+                      !provider.analysis_ready
+                    }
                     title={
-                      provider.credential.configured
-                        ? undefined
-                        : 'Configure a chave deste provedor primeiro'
+                      !provider.credential.configured
+                        ? 'Configure a chave deste provedor primeiro'
+                        : !provider.analysis_ready
+                          ? 'A análise criativa ainda roda só em modelos Claude'
+                          : undefined
                     }
                     className="rounded-lg border border-white/20 px-4 py-2 text-xs uppercase tracking-widest text-bone-200 transition hover:border-gold-400/60 hover:text-gold-200 disabled:cursor-not-allowed disabled:opacity-35"
                   >

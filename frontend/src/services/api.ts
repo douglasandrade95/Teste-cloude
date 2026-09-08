@@ -82,6 +82,7 @@ export interface ProviderInfo {
   free_tier: boolean
   free_note: string
   recommended: boolean
+  analysis_ready: boolean
   tags: string[]
   models: ModelInfo[]
   credential: CredentialStatus

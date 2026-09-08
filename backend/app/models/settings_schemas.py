@@ -33,6 +33,9 @@ class ProviderInfo(BaseModel):
     free_tier: bool = False
     free_note: str = ""
     recommended: bool = False
+    analysis_ready: bool = Field(
+        False, description="Whether the creative-analysis engine can run on this provider"
+    )
     tags: List[str] = []
     models: List[ModelInfo] = []
     credential: CredentialStatus

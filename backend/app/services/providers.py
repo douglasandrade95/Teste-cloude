@@ -51,6 +51,12 @@ class Provider:
     auth_style: str = "bearer"  # bearer | x-api-key | query | token | none
     recommended: bool = False
     tags: List[str] = field(default_factory=list)
+    # Some APIs answer HTTP 200 and put the real status in the JSON body
+    # (Kie.ai does this), so the connection test has to read the body too.
+    status_in_body: bool = False
+    # Whether the creative-analysis engine can actually run on this provider
+    # today. Catalogued providers that can't yet still store and test keys.
+    analysis_ready: bool = False
 
     @property
     def secret_name(self) -> str:
@@ -70,6 +76,7 @@ PROVIDERS: Tuple[Provider, ...] = (
         test_path="/v1/models",
         auth_style="x-api-key",
         recommended=True,
+        analysis_ready=True,
         tags=["direção criativa", "texto", "análise"],
         models=[
             ModelOption("claude-opus-5", "Claude Opus 5", "Mais profundo, direção autoral."),
@@ -139,6 +146,25 @@ PROVIDERS: Tuple[Provider, ...] = (
             ),
             ModelOption("deepseek/deepseek-chat", "DeepSeek Chat", "Muito barato."),
             ModelOption("anthropic/claude-sonnet-4.5", "Claude via OpenRouter", "Cobrança via créditos."),
+        ],
+    ),
+    Provider(
+        id="kie",
+        label="Kie.ai",
+        tagline="Um agregador: uma chave só para Veo, Seedance, Nano Banana e Suno.",
+        env_var="KIE_API_KEY",
+        key_url="https://kie.ai/api-key",
+        docs_url="https://docs.kie.ai/",
+        base_url="https://api.kie.ai",
+        test_path="/api/v1/chat/credit",
+        auth_style="bearer",
+        status_in_body=True,
+        tags=["vídeo", "imagem", "música", "barato"],
+        models=[
+            ModelOption("veo3", "Veo 3", "Vídeo com áudio. Versão Fast sai bem mais barata."),
+            ModelOption("seedance", "Seedance 2.0", "Vídeo com boa direção de câmera."),
+            ModelOption("nano-banana", "Nano Banana", "Imagem rápida e barata."),
+            ModelOption("suno", "Suno", "Trilha original para o corte."),
         ],
     ),
     Provider(
@@ -320,6 +346,66 @@ def _build_test_request(provider: Provider, key: Optional[str]) -> Tuple[str, Di
     return url, headers
 
 
+def _read_status_from_body(response: "httpx.Response") -> Dict:
+    """
+    Some APIs always answer HTTP 200 and carry the real status in the JSON
+    body as {"code": 401, "msg": "..."}. Trusting the HTTP status there would
+    green-light an invalid key, so read the body instead.
+    """
+    try:
+        payload = response.json()
+    except ValueError:
+        return {
+            "ok": False,
+            "message": "O provedor respondeu em um formato inesperado.",
+            "status_code": response.status_code,
+        }
+
+    if not isinstance(payload, dict):
+        return {
+            "ok": False,
+            "message": "O provedor respondeu em um formato inesperado.",
+            "status_code": response.status_code,
+        }
+
+    code = payload.get("code")
+    if code in (200, 0, None):
+        return {
+            "ok": True,
+            "message": "Conexão confirmada. A chave está válida.",
+            "status_code": 200,
+        }
+
+    if code in (401, 403):
+        return {
+            "ok": False,
+            "message": "O provedor recusou a chave (não autorizada). Gere uma nova.",
+            "status_code": code,
+        }
+
+    if code == 402:
+        return {
+            "ok": True,
+            "message": "Chave válida, mas a conta está sem créditos.",
+            "status_code": code,
+        }
+
+    if code == 429:
+        return {
+            "ok": True,
+            "message": "Chave válida, mas você atingiu o limite de requisições agora.",
+            "status_code": code,
+        }
+
+    detail = str(payload.get("msg") or payload.get("message") or "").strip()
+    return {
+        "ok": False,
+        "message": f"O provedor recusou a requisição (código {code})."
+        + (f" {detail}" if detail else ""),
+        "status_code": code if isinstance(code, int) else response.status_code,
+    }
+
+
 async def test_provider_connection(provider: Provider, key: Optional[str]) -> Dict:
     """
     Hit a cheap read-only endpoint to confirm the credential actually works.
@@ -353,6 +439,8 @@ async def test_provider_connection(provider: Provider, key: Optional[str]) -> Di
         return {"ok": False, "message": message, "status_code": None}
 
     if response.status_code < 300:
+        if provider.status_in_body:
+            return _read_status_from_body(response)
         return {
             "ok": True,
             "message": "Conexão confirmada. A chave está válida.",
@@ -396,6 +484,7 @@ def serialize_provider(provider: Provider) -> Dict:
         "free_tier": provider.free_tier,
         "free_note": provider.free_note,
         "recommended": provider.recommended,
+        "analysis_ready": provider.analysis_ready,
         "tags": list(provider.tags),
         "models": [
             {"id": m.id, "label": m.label, "note": m.note, "free": m.free}

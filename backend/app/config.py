@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
     openrouter_api_key: str = ""
     deepseek_api_key: str = ""
+    kie_api_key: str = ""
     ollama_base_url: str = "http://localhost:11434"
 
     # Credential vault (see app/services/vault.py)
