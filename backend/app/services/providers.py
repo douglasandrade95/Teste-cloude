@@ -151,7 +151,7 @@ PROVIDERS: Tuple[Provider, ...] = (
     Provider(
         id="kie",
         label="Kie.ai",
-        tagline="Um agregador: uma chave só para Veo, Seedance, Nano Banana e Suno.",
+        tagline="Um agregador: uma chave só para Gemini Omni, Wan 3.0 e Seedance.",
         env_var="KIE_API_KEY",
         key_url="https://kie.ai/api-key",
         docs_url="https://docs.kie.ai/",
@@ -159,12 +159,35 @@ PROVIDERS: Tuple[Provider, ...] = (
         test_path="/api/v1/chat/credit",
         auth_style="bearer",
         status_in_body=True,
-        tags=["vídeo", "imagem", "música", "barato"],
+        tags=["vídeo", "geração", "barato"],
+        # Model ids verified against docs.kie.ai — they are "vendor/model" and
+        # go through POST /api/v1/jobs/createTask as the "model" field.
         models=[
-            ModelOption("veo3", "Veo 3", "Vídeo com áudio. Versão Fast sai bem mais barata."),
-            ModelOption("seedance", "Seedance 2.0", "Vídeo com boa direção de câmera."),
-            ModelOption("nano-banana", "Nano Banana", "Imagem rápida e barata."),
-            ModelOption("suno", "Suno", "Trilha original para o corte."),
+            ModelOption(
+                "google/gemini-omni-flash-1-1",
+                "Gemini Omni Flash 1.1",
+                "Multimodal do Google: gera e edita vídeo.",
+            ),
+            ModelOption(
+                "wan/3-0-video",
+                "Wan 3.0",
+                "Omni-reference: texto, imagem, vídeo e áudio como referência.",
+            ),
+            ModelOption(
+                "bytedance/seedance-2-5",
+                "Seedance 2.5",
+                "Até 30s em 4K, controle fino por referência.",
+            ),
+            ModelOption(
+                "bytedance/seedance-2",
+                "Seedance 2.0",
+                "Movimento humano realista.",
+            ),
+            ModelOption(
+                "bytedance/seedance-2-fast",
+                "Seedance 2.0 Fast",
+                "Mesma família, mais rápida e mais barata.",
+            ),
         ],
     ),
     Provider(

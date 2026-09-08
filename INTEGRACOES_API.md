@@ -58,8 +58,20 @@ Se você não quer colocar cartão agora, comece por uma destas:
 | **Ollama** | roda na sua máquina: zero custo, zero chave, nada sai do computador | https://ollama.com/download |
 
 Fora dos gratuitos, a **Kie.ai** é o caminho barato: um agregador em que uma
-chave só dá acesso a Veo, Seedance, Nano Banana e Suno, com 80 créditos grátis
-no cadastro. Chave em https://kie.ai/api-key.
+chave só dá acesso aos modelos de vídeo de ponta, com 80 créditos grátis no
+cadastro. Chave em https://kie.ai/api-key.
+
+Os principais, com os identificadores exatos que a API espera:
+
+| Modelo | `model` na requisição |
+|---|---|
+| Gemini Omni Flash 1.1 | `google/gemini-omni-flash-1-1` |
+| Wan 3.0 | `wan/3-0-video` |
+| Seedance 2.5 | `bytedance/seedance-2-5` |
+| Seedance 2.0 | `bytedance/seedance-2` |
+| Seedance 2.0 Fast | `bytedance/seedance-2-fast` |
+
+Todos passam por `POST /api/v1/jobs/createTask`, com o `model` no corpo.
 
 > Hoje a análise criativa do editor fala a API da Anthropic (Claude). Os outros
 > provedores já ficam cadastrados, testados e prontos no cofre, mas a tela não
