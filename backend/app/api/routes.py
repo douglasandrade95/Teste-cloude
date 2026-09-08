@@ -11,7 +11,7 @@ from app.models.schemas import (
     EmotionalAnalysisResponse,
     VideoAnalysisResponse,
 )
-from app.services.ai_analyzer import AIAnalyzer
+from app.services.ai_analyzer import AIAnalyzer, MissingCredentialError
 from app.services.video_processor import VideoProcessor
 from app.config import get_settings
 
@@ -19,8 +19,20 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1", tags=["video_editor"])
 
 settings = get_settings()
-ai_analyzer = AIAnalyzer(settings.anthropic_api_key)
 video_processor = VideoProcessor()
+
+
+def get_ai_analyzer() -> AIAnalyzer:
+    """
+    Resolve the analyzer from whatever credential is configured right now.
+
+    Built per request (instead of at import time) so a key saved in the
+    Integrações screen takes effect without restarting the server.
+    """
+    try:
+        return AIAnalyzer.from_configuration()
+    except MissingCredentialError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 # In-memory storage for demo (replace with database in production)
 projects = {}
@@ -62,7 +74,7 @@ async def upload_video(
         metadata = await video_processor.get_video_metadata(file_path)
 
         # Analyze with AI
-        analysis = await ai_analyzer.analyze_emotional_vibe(vibe, metadata)
+        analysis = await get_ai_analyzer().analyze_emotional_vibe(vibe, metadata)
 
         # Store project
         projects[project_id] = {
@@ -83,6 +95,9 @@ async def upload_video(
             "emotional_analysis": analysis,
         }
 
+    except HTTPException:
+        # Already a meaningful client error (bad format, missing API key…).
+        raise
     except Exception as e:
         logger.error(f"Upload error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -152,13 +167,15 @@ async def analyze_references(
             "minimal typography",
         ]
 
-        aesthetic = await ai_analyzer.suggest_aesthetic_style(references, vibe)
+        aesthetic = await get_ai_analyzer().suggest_aesthetic_style(references, vibe)
 
         return {
             "project_id": project_id,
             "aesthetic_suggestion": aesthetic,
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Analysis error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
