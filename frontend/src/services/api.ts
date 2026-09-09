@@ -150,6 +150,71 @@ export async function testProviderKey(
   return data
 }
 
+// --- Generation (Kie.ai) ---------------------------------------------------
+
+const generate = '/api/v1/generate'
+
+export interface GenerationModelInfo {
+  id: string
+  label: string
+  implemented: boolean
+  durations: string[]
+  aspect_ratios: string[]
+  resolutions: string[]
+  notes: string
+}
+
+export interface GenerationCapabilities {
+  configured: boolean
+  models: GenerationModelInfo[]
+  options: Record<string, number>
+}
+
+export interface TaskStatus {
+  task_id: string
+  model: string
+  state: 'waiting' | 'queuing' | 'generating' | 'success' | 'fail'
+  finished: boolean
+  succeeded: boolean
+  progress: number
+  result_urls: string[]
+  credits_consumed: number | null
+  cost_time_ms: number | null
+  fail_message: string
+}
+
+export interface GenerateVideoParams {
+  model: string
+  prompt: string
+  duration: string
+  aspect_ratio: string
+  resolution: string
+  image_urls?: string[]
+  seed?: number
+}
+
+export async function fetchCapabilities(): Promise<GenerationCapabilities> {
+  const { data } = await api.get<GenerationCapabilities>(`${generate}/capabilities`)
+  return data
+}
+
+export async function fetchCredits(): Promise<number> {
+  const { data } = await api.get<{ credits: number }>(`${generate}/credits`)
+  return data.credits
+}
+
+export async function generateVideo(
+  params: GenerateVideoParams
+): Promise<{ task_id: string; model: string; message: string }> {
+  const { data } = await api.post(`${generate}/video`, params)
+  return data
+}
+
+export async function fetchTask(taskId: string): Promise<TaskStatus> {
+  const { data } = await api.get<TaskStatus>(`${generate}/task/${taskId}`)
+  return data
+}
+
 export async function setActiveModel(
   providerId: string,
   modelId: string

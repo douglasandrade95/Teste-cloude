@@ -6,6 +6,7 @@ from fastapi.middleware.gzip import GZIPMiddleware
 from app.config import get_settings
 from app.api.routes import router
 from app.api.settings_routes import router as settings_router
+from app.api.generation_routes import router as generation_router
 
 # Configure logging
 logging.basicConfig(
@@ -38,6 +39,7 @@ app.add_middleware(
 # Routes
 app.include_router(router)
 app.include_router(settings_router)
+app.include_router(generation_router)
 
 
 @app.on_event("startup")

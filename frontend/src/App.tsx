@@ -1,12 +1,14 @@
 import { NavLink, Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
-import { Clapperboard, SlidersHorizontal } from 'lucide-react'
+import { Clapperboard, SlidersHorizontal, Wand2 } from 'lucide-react'
 
 import { Editor } from './pages/Editor'
+import { Generate } from './pages/Generate'
 import { Integrations } from './pages/Integrations'
 
 const links = [
   { to: '/editor', label: 'Editor', icon: Clapperboard },
+  { to: '/gerar', label: 'Gerar', icon: Wand2 },
   { to: '/integracoes', label: 'Integrações', icon: SlidersHorizontal },
 ]
 
@@ -47,6 +49,7 @@ export function App() {
       <TopNav />
       <Routes>
         <Route path="/editor" element={<Editor />} />
+        <Route path="/gerar" element={<Generate />} />
         <Route path="/integracoes" element={<Integrations />} />
         <Route path="*" element={<Navigate to="/editor" replace />} />
       </Routes>

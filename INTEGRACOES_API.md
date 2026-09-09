@@ -73,6 +73,15 @@ Os principais, com os identificadores exatos que a API espera:
 
 Todos passam por `POST /api/v1/jobs/createTask`, com o `model` no corpo.
 
+**Geração implementada:** apenas o Gemini Omni 1.1 Flash, na tela `/gerar`. Os
+outros quatro estão catalogados e a tela os mostra como "Em breve" — cada um tem
+seu próprio schema de entrada e precisa do seu construtor antes de ser exposto.
+
+O fluxo é assíncrono: `POST /api/v1/generate/video` devolve `202` com um
+`task_id`, e `GET /api/v1/generate/task/{task_id}` acompanha até o resultado.
+Os parâmetros são validados localmente antes de qualquer chamada — pedido
+inválido não gasta crédito.
+
 > Hoje a análise criativa do editor fala a API da Anthropic (Claude). Os outros
 > provedores já ficam cadastrados, testados e prontos no cofre, mas a tela não
 > deixa ativá-los para análise — ela diz o porquê em vez de deixar a edição
