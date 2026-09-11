@@ -3,15 +3,13 @@ modules = ["python-3.11", "nodejs-20"]
 
 [deployment]
 deploymentTarget = "gce"
+run = ["bash", "./scripts/replit-start.sh"]
 
 [env]
 PYTHONUNBUFFERED = "1"
-VITE_API_URL = "$REPLIT_DEPLOYMENT_URL/api/v1"
 
+# One public URL. FastAPI serves both the built frontend and the API, so there
+# is no second port to expose and no API base URL to configure.
 [[ports]]
 localPort = 8000
-exposeLocalhost = true
-
-[[ports]]
-localPort = 5173
-exposeLocalhost = true
+externalPort = 80

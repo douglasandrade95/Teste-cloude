@@ -1,137 +1,104 @@
-# 🚀 AutoVideoEditor no Replit
+# Rodar o AutoVideoEditor no Replit
 
-Rodando tudo na nuvem, sem precisar de computador!
+Para acessar do celular, de qualquer lugar, sem instalar nada.
 
-## 1️⃣ Criar Replit
-
-### Opção A: Do GitHub (Mais Fácil)
-
-1. Vá para: https://replit.com
-2. Clique **+ Create** 
-3. Selecione **Import from GitHub**
-4. Cole: `https://github.com/douglasandrade95/Teste-cloude`
-5. Clique **Import**
-
-Pronto! Replit vai:
-- ✅ Clonar o repositório
-- ✅ Instalar dependências
-- ✅ Detectar a configuração `.replit`
+O app inteiro roda numa **URL só**: o backend serve a interface e a API juntos.
+Não tem porta separada nem endereço de API para configurar.
 
 ---
 
-## 2️⃣ Configurar API Key
+## 1. Importar o repositório
 
-1. No Replit, abra o painel **Secrets** (ícone de cadeado)
-2. Clique **+ Add Secret**
-3. Nome: `ANTHROPIC_API_KEY`
-4. Valor: `sk-ant-v0-xxxxx...` (sua chave Claude)
-5. Clique **Add**
+1. Abra https://replit.com
+2. **+ Create** → **Import from GitHub**
+3. Cole: `https://github.com/douglasandrade95/Teste-cloude`
+4. **Import**
 
----
-
-## 3️⃣ Rodar o App
-
-Clique no botão **Run** (▶️) no topo.
-
-O Replit vai:
-1. Instalar FFmpeg
-2. Instalar dependências Python
-3. Instalar dependências Node
-4. **Abrir o frontend em http://localhost:5173**
-
-Após alguns segundos, você verá a interface no navegador! ✨
+O Replit lê o `.replit` e já sabe o que fazer.
 
 ---
 
-## 4️⃣ Como Usar (Do Celular)
+## 2. Configurar os dois segredos
 
-1. O Replit abre automaticamente em uma **aba nova**
-2. Você verá a interface do AutoVideoEditor
-3. Pode fazer upload de vídeo direto!
+Abra o painel **Secrets** (ícone de cadeado) e adicione:
 
----
+| Nome | Para que serve |
+|---|---|
+| `AVE_MASTER_KEY` | A chave que criptografa o cofre. **Sem ela, toda vez que o Replit reiniciar o cofre ganha uma chave nova e a sua chave de API salva vira ilegível.** |
+| `AVE_ADMIN_TOKEN` | Libera a tela de Integrações fora da máquina local. Sem ele, o navegador do celular recebe 403 e você não consegue salvar chave nenhuma. |
 
-## 🎬 URLs de Acesso
+**Não precisa inventar os valores.** Clique **Run** uma vez: o script detecta que
+estão faltando e imprime dois valores prontos no console. Copie, cole em
+Secrets, e clique Run de novo.
 
-| Serviço | URL |
-|---------|-----|
-| Frontend | Abre automaticamente |
-| Backend API | `https://seu-replit-url/api/v1` |
-| API Docs | `https://seu-replit-url/docs` |
+Se preferir gerar por conta própria:
 
----
-
-## ⚠️ Limitações do Replit Gratuito
-
-- ⏱️ Timeout após 1 hora de inatividade
-- 📁 500MB de armazenamento
-- 💾 Videos muito grandes podem dar erro
-- 🔄 Algumas features de background task podem não funcionar
-
-**Para produção**, considere:
-- Railway
-- Render
-- Heroku
-
----
-
-## 🔧 Troubleshooting
-
-### "Module not found"
-```
-Replit às vezes não instala tudo correto.
-Clique em Run novamente.
+```bash
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"   # AVE_MASTER_KEY
+python -c "import secrets; print(secrets.token_urlsafe(24))"                                 # AVE_ADMIN_TOKEN
 ```
 
-### "Port already in use"
-```
-Replit gerencia as portas automaticamente.
-Não precisa fazer nada - é normal.
-```
-
-### Frontend carrega em branco
-```
-Aguarde 30-60 segundos na primeira vez.
-Replit está compilando o React.
-```
-
-### Upload não funciona
-```
-Certifique-se que ANTHROPIC_API_KEY está em Secrets.
-```
+> As chaves de API (Kie.ai, Anthropic…) **não** vão aqui. Elas entram pela tela
+> de Integrações, que as guarda criptografadas. Ver `INTEGRACOES_API.md`.
 
 ---
 
-## 📱 Usando do Celular
+## 3. Rodar
 
-A URL do Replit funciona direto no navegador do celular:
+Clique **Run**. O script:
 
-1. Seu Replit vai gerar uma URL tipo:
-   ```
-   https://seu-nome-autovideoeditor.replit.dev
-   ```
+1. instala as dependências do backend e do frontend;
+2. **compila** o frontend (`npm run build`);
+3. sobe o FastAPI servindo tudo na porta 8000.
 
-2. Acesse essa URL no Safari/Chrome do celular
-
-3. Pronto! Pode usar o app normalmente.
+A primeira vez demora alguns minutos, principalmente as bibliotecas de vídeo.
 
 ---
 
-## 🚀 Próximos Passos
+## 4. Usar do celular
 
-1. ✅ App rodando no Replit
-2. 🎬 Teste com um vídeo
-3. 💾 Considere upgrade para:
-   - **Railway** (recomendado)
-   - **Render**
-   - **Fly.io**
+O Replit mostra uma URL tipo `https://seu-repl.replit.dev`. Abra no navegador
+do celular.
+
+| Caminho | O que é |
+|---|---|
+| `/integracoes` | Cadastrar e testar as chaves de API |
+| `/gerar` | O Studio: escolher modelo e gerar vídeo |
+| `/editor` | O editor de vídeo |
+| `/docs` | Documentação da API |
+
+**Na primeira vez que abrir Integrações**, a tela vai pedir o token de
+administração. Cole o valor de `AVE_ADMIN_TOKEN`. Ele fica só naquela aba do
+navegador e some quando você fecha — então terá que colar de novo em cada
+aparelho.
+
+Depois disso: escolha o provedor, cole a chave de API, **Salvar com segurança**.
 
 ---
 
-## 💡 Dicas
+## O que pode dar errado
 
-- Replit salva automaticamente
-- Você pode acessar pelo celular em qualquer lugar
-- Para compartilhar com amigos, dê a URL do Replit
+**"Editor routes unavailable" no console.** As bibliotecas de vídeo
+(moviepy, librosa, numpy) são pesadas e às vezes falham num host pequeno. O app
+sobe do mesmo jeito, e o Studio e as Integrações funcionam — só o `/editor`
+fica fora. Clicar Run de novo costuma resolver.
 
-Aproveita! 🎉
+**Tela de Integrações dá 403.** Falta `AVE_ADMIN_TOKEN` em Secrets, ou você
+ainda não colou o token na tela.
+
+**A chave de API sumiu depois de um restart.** Falta `AVE_MASTER_KEY` em
+Secrets. Configure e cadastre a chave de novo.
+
+**Página em branco.** O build ainda não terminou. Veja o console até aparecer
+`Serving on port 8000`.
+
+---
+
+## Limites do Replit gratuito
+
+- Hiberna após um tempo sem uso; a primeira visita depois disso é lenta
+- Armazenamento pequeno — vídeos grandes podem não caber
+- Tarefas de fundo longas podem ser interrompidas
+
+Para uso sério, Railway ou Render seguram melhor. O mesmo script serve nos dois:
+eles só precisam rodar `scripts/replit-start.sh` e expor a porta `$PORT`.

@@ -1,8 +1,22 @@
 import axios from 'axios'
 
+/**
+ * Where the API lives.
+ *
+ * Empty means same-origin, which is how the bundled deploy runs: FastAPI
+ * serves this page and the API from one URL, so requests are relative and
+ * there is nothing to configure. Set VITE_API_URL when running the Vite dev
+ * server against a backend on another port.
+ */
+const configuredApiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.replace(
+  /\/$/,
+  ''
+)
+
+const isDevServer = Boolean(import.meta.env.DEV)
+
 export const API_URL =
-  (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') ||
-  'http://localhost:8000'
+  configuredApiUrl || (isDevServer ? 'http://localhost:8000' : '')
 
 /**
  * Optional admin token, used only when the backend is not running on the same
@@ -48,7 +62,8 @@ export function errorMessage(error: unknown, fallback: string): string {
     if (typeof detail === 'string') return detail
     if (Array.isArray(detail) && detail[0]?.msg) return String(detail[0].msg)
     if (error.code === 'ERR_NETWORK') {
-      return `Não consegui falar com o backend em ${API_URL}. Ele está rodando?`
+      const where = API_URL || 'este endereço'
+      return `Não consegui falar com o backend em ${where}. Ele está rodando?`
     }
   }
   return fallback
