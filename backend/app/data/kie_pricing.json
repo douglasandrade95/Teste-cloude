@@ -8,10 +8,30 @@
       "source_url": "https://kie.ai/gemini-omni-1-1-flash",
       "note": "Cobrado por geração, não por segundo. Com vídeo de entrada é preço fixo, independente da duração.",
       "no_video": {
-        "360p": { "4": 63, "6": 84, "8": 105, "10": 126 },
-        "720p": { "4": 63, "6": 84, "8": 105, "10": 126 },
-        "1080p": { "4": 63, "6": 84, "8": 105, "10": 126 },
-        "4k": { "4": 147, "6": 168, "8": 189, "10": 210 }
+        "360p": {
+          "4": 63,
+          "6": 84,
+          "8": 105,
+          "10": 126
+        },
+        "720p": {
+          "4": 63,
+          "6": 84,
+          "8": 105,
+          "10": 126
+        },
+        "1080p": {
+          "4": 63,
+          "6": 84,
+          "8": 105,
+          "10": 126
+        },
+        "4k": {
+          "4": 147,
+          "6": 168,
+          "8": 189,
+          "10": 210
+        }
       },
       "with_video": {
         "360p": 168,
@@ -25,9 +45,18 @@
       "source_url": "https://kie.ai/wan3.0-video",
       "note": "Cobrança = (duração do vídeo de entrada + duração de saída) x preço por segundo.",
       "per_second": {
-        "480P": { "no_video": 8, "with_video": 8 },
-        "720P": { "no_video": 16, "with_video": 16 },
-        "1080P": { "no_video": 32, "with_video": 32 }
+        "480P": {
+          "no_video": 8,
+          "with_video": 8
+        },
+        "720P": {
+          "no_video": 16,
+          "with_video": 16
+        },
+        "1080P": {
+          "no_video": 32,
+          "with_video": 32
+        }
       }
     },
     "bytedance/seedance-2-5": {
@@ -35,9 +64,18 @@
       "source_url": "https://kie.ai/seedance-2-5",
       "note": "Com vídeo de entrada o preço unitário é menor, mas conta entrada + saída. Inclui desconto de 28% em 1080P até 17/10/2026.",
       "per_second": {
-        "480p": { "no_video": 28, "with_video": 17 },
-        "720p": { "no_video": 63, "with_video": 38 },
-        "1080p": { "no_video": 114, "with_video": 68.5 }
+        "480p": {
+          "no_video": 28,
+          "with_video": 17
+        },
+        "720p": {
+          "no_video": 63,
+          "with_video": 38
+        },
+        "1080p": {
+          "no_video": 114,
+          "with_video": 68.5
+        }
       }
     },
     "bytedance/seedance-2": {
@@ -45,10 +83,22 @@
       "source_url": "https://kie.ai/seedance-2-0",
       "note": "Com vídeo de entrada o preço unitário é menor, mas conta entrada + saída.",
       "per_second": {
-        "480p": { "no_video": 19, "with_video": 11.5 },
-        "720p": { "no_video": 41, "with_video": 25 },
-        "1080p": { "no_video": 102, "with_video": 62 },
-        "4k": { "no_video": 208, "with_video": 128 }
+        "480p": {
+          "no_video": 19,
+          "with_video": 11.5
+        },
+        "720p": {
+          "no_video": 41,
+          "with_video": 25
+        },
+        "1080p": {
+          "no_video": 102,
+          "with_video": 62
+        },
+        "4k": {
+          "no_video": 208,
+          "with_video": 128
+        }
       }
     },
     "bytedance/seedance-2-fast": {
@@ -56,9 +106,47 @@
       "source_url": "https://kie.ai/seedance-2-0",
       "note": "Desconto por tempo limitado até 07/10/2026.",
       "per_second": {
-        "480p": { "no_video": 11.7, "with_video": 6.8 },
-        "720p": { "no_video": 24.8, "with_video": 15 }
+        "480p": {
+          "no_video": 11.7,
+          "with_video": 6.8
+        },
+        "720p": {
+          "no_video": 24.8,
+          "with_video": 15
+        }
       }
+    },
+    "seedream/4.5-text-to-image": {
+      "mode": "per_image",
+      "source_url": "https://kie.ai/seedream-4-5",
+      "note": "6,5 créditos por imagem, cerca de 19% abaixo do preço oficial.",
+      "per_image": 6.5
+    },
+    "seedream/4.5-edit": {
+      "mode": "per_image",
+      "source_url": "https://kie.ai/seedream-4-5",
+      "note": "6,5 créditos por imagem, cerca de 19% abaixo do preço oficial.",
+      "per_image": 6.5
+    },
+    "seedream/5-pro-text-to-image": {
+      "mode": "unpublished",
+      "source_url": "https://kie.ai/market",
+      "note": "A Kie.ai ainda não publicou o preço deste modelo. O custo real aparece no campo creditsConsumed quando a tarefa termina."
+    },
+    "seedream/5-lite-text-to-image": {
+      "mode": "unpublished",
+      "source_url": "https://kie.ai/market",
+      "note": "A Kie.ai ainda não publicou o preço deste modelo. O custo real aparece no campo creditsConsumed quando a tarefa termina."
+    },
+    "seedream/5-pro-image-to-image": {
+      "mode": "unpublished",
+      "source_url": "https://kie.ai/market",
+      "note": "A Kie.ai ainda não publicou o preço deste modelo. O custo real aparece no campo creditsConsumed quando a tarefa termina."
+    },
+    "seedream/5-lite-image-to-image": {
+      "mode": "unpublished",
+      "source_url": "https://kie.ai/market",
+      "note": "A Kie.ai ainda não publicou o preço deste modelo. O custo real aparece no campo creditsConsumed quando a tarefa termina."
     }
   }
 }

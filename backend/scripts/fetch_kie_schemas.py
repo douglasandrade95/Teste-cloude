@@ -47,11 +47,27 @@ MODELS = [
      "Seedance 2.0", "texto-video"),
     ("bytedance/seedance-2-fast", "market/bytedance/seedance-2-fast",
      "Seedance 2.0 Fast", "texto-video"),
+    # Seedream is ByteDance's image family. Note 4.5 uses a dot in its id
+    # while 5 uses dashes — copy them exactly.
+    ("seedream/5-pro-text-to-image", "market/seedream/5-pro-text-to-image",
+     "Seedream 5 Pro", "texto-imagem"),
+    ("seedream/5-lite-text-to-image", "market/seedream/5-lite-text-to-image",
+     "Seedream 5 Lite", "texto-imagem"),
+    ("seedream/4.5-text-to-image", "market/seedream/4-5-text-to-image",
+     "Seedream 4.5", "texto-imagem"),
+    ("seedream/5-pro-image-to-image", "market/seedream/5-pro-image-to-image",
+     "Seedream 5 Pro — editar", "editar-imagem"),
+    ("seedream/5-lite-image-to-image", "market/seedream-5-lite-image-to-image",
+     "Seedream 5 Lite — editar", "editar-imagem"),
+    ("seedream/4.5-edit", "market/seedream/4-5-edit",
+     "Seedream 4.5 — editar", "editar-imagem"),
 ]
 
 CATEGORY_LABELS = {
     "texto-video": "Texto → Vídeo",
     "referencia-video": "Referência → Vídeo",
+    "texto-imagem": "Texto → Imagem",
+    "editar-imagem": "Editar imagem",
 }
 
 # Fields the docs declare as `object` but whose own examples pass a URL string.

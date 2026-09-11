@@ -10,6 +10,11 @@ page on kie.ai. Two shapes exist and they are not interchangeable:
   estimate without knowing the input length is a lower bound.
 - **Per generation** (Gemini Omni): a flat price per duration/resolution pair,
   and a single flat price when a video is supplied, regardless of duration.
+- **Per image** (Seedream 4.5): one flat price per image.
+
+A model can also be catalogued with no published price at all (Seedream 5 at
+the time of writing). That is reported as unknown rather than guessed — the
+real cost still arrives in `creditsConsumed` when the task finishes.
 
 Every estimate says which assumptions it made, because guessing silently is
 how someone ends up surprised by a bill.
@@ -69,6 +74,19 @@ def estimate(model_id: str, values: Dict[str, Any]) -> Dict[str, Any]:
     with_video = _has_video_input(values)
     resolution = str(values.get("resolution") or "")
     assumptions: List[str] = []
+
+    if pricing["mode"] == "unpublished":
+        return {
+            "available": False,
+            "reason": pricing.get("note", "A Kie.ai não publicou o preço deste modelo."),
+            "credits": None,
+            "usd": None,
+            "assumptions": [],
+            "source_url": pricing.get("source_url"),
+        }
+
+    if pricing["mode"] == "per_image":
+        return _result(float(pricing["per_image"]), ["Preço fixo por imagem."], pricing)
 
     if pricing["mode"] == "per_generation":
         table = pricing["with_video"] if with_video else pricing["no_video"]
@@ -177,4 +195,5 @@ def rate_table(model_id: str) -> Dict[str, Any]:
         "per_second": pricing.get("per_second", {}),
         "no_video": pricing.get("no_video", {}),
         "with_video": pricing.get("with_video", {}),
+        "per_image": pricing.get("per_image"),
     }

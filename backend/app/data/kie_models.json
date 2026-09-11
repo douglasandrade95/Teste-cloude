@@ -421,6 +421,353 @@
       "duration"
     ]
   },
+  "seedream/4.5-edit": {
+    "category": "editar-imagem",
+    "category_label": "Editar imagem",
+    "constraints": {},
+    "docs_url": "https://docs.kie.ai/market/seedream/4-5-edit",
+    "id": "seedream/4.5-edit",
+    "label": "Seedream 4.5 — editar",
+    "properties": {
+      "aspect_ratio": {
+        "default": "1:1",
+        "description": "Width-height ratio of the image, determining its visual form.",
+        "enum": [
+          "1:1",
+          "4:3",
+          "3:4",
+          "16:9",
+          "9:16",
+          "2:3",
+          "3:2",
+          "21:9"
+        ],
+        "type": "string"
+      },
+      "image_urls": {
+        "description": "Upload an image file to use as input for the API (File URL after upload, not file content; Accepted types: image/jpeg, image/png, image/webp; Max size: 30.0MB)",
+        "item_type": "string",
+        "max_items": 14,
+        "type": "array"
+      },
+      "nsfw_checker": {
+        "description": "Defaults to false. You can set it to false based on your needs. If set to false, our content filtering will be disabled, and all results will be returned directly by the model itself. Note: There is no guarantee that everything can be filtered out; if you are not satisfied with the results, you will need to make your own arrangements.",
+        "type": "boolean"
+      },
+      "prompt": {
+        "description": "A text description of the image you want to generate (Max length: 3000 characters)",
+        "max_length": 3000,
+        "type": "string"
+      },
+      "quality": {
+        "default": "basic",
+        "description": "Basic outputs 2K images, while High outputs 4K images.",
+        "enum": [
+          "basic",
+          "high"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "prompt",
+      "image_urls",
+      "aspect_ratio",
+      "quality"
+    ]
+  },
+  "seedream/4.5-text-to-image": {
+    "category": "texto-imagem",
+    "category_label": "Texto → Imagem",
+    "constraints": {},
+    "docs_url": "https://docs.kie.ai/market/seedream/4-5-text-to-image",
+    "id": "seedream/4.5-text-to-image",
+    "label": "Seedream 4.5",
+    "properties": {
+      "aspect_ratio": {
+        "default": "1:1",
+        "description": "Width-height ratio of the image, determining its visual form.",
+        "enum": [
+          "1:1",
+          "4:3",
+          "3:4",
+          "16:9",
+          "9:16",
+          "2:3",
+          "3:2",
+          "21:9"
+        ],
+        "type": "string"
+      },
+      "nsfw_checker": {
+        "description": "Defaults to false. You can set it to false based on your needs. If set to false, our content filtering will be disabled, and all results will be returned directly by the model itself. Note: There is no guarantee that everything can be filtered out; if you are not satisfied with the results, you will need to make your own arrangements.",
+        "type": "boolean"
+      },
+      "prompt": {
+        "description": "A text description of the image you want to generate (Max length: 3000 characters)",
+        "max_length": 3000,
+        "type": "string"
+      },
+      "quality": {
+        "default": "basic",
+        "description": "Basic outputs 2K images, while High outputs 4K images.",
+        "enum": [
+          "basic",
+          "high"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "prompt",
+      "aspect_ratio",
+      "quality"
+    ]
+  },
+  "seedream/5-lite-image-to-image": {
+    "category": "editar-imagem",
+    "category_label": "Editar imagem",
+    "constraints": {},
+    "docs_url": "https://docs.kie.ai/market/seedream-5-lite-image-to-image",
+    "id": "seedream/5-lite-image-to-image",
+    "label": "Seedream 5 Lite — editar",
+    "properties": {
+      "aspect_ratio": {
+        "default": "1:1",
+        "description": "Width-height ratio of the image, determining its visual form.",
+        "enum": [
+          "1:1",
+          "4:3",
+          "3:4",
+          "16:9",
+          "9:16",
+          "2:3",
+          "3:2",
+          "21:9"
+        ],
+        "type": "string"
+      },
+      "image_urls": {
+        "description": "Upload an image file to use as input for the API (File URL after upload, not file content; Accepted types: image/jpeg, image/png, image/webp; Max size: 30.0MB)",
+        "item_type": "string",
+        "max_items": 14,
+        "type": "array"
+      },
+      "nsfw_checker": {
+        "description": "Defaults to false. You can set it to false based on your needs. If set to false, our content filtering will be disabled, and all results will be returned directly by the model itself. Note: There is no guarantee that everything can be filtered out; if you are not satisfied with the results, you will need to make your own arrangements.",
+        "type": "boolean"
+      },
+      "output_format": {
+        "default": "png",
+        "description": "Format of the output image",
+        "enum": [
+          "png",
+          "jpeg"
+        ],
+        "type": "string"
+      },
+      "prompt": {
+        "description": "A text description of the image you want to generate (Max length: 3-3000 characters)",
+        "max_length": 3000,
+        "type": "string"
+      },
+      "quality": {
+        "default": "basic",
+        "description": "Basic outputs 2K images, while High outputs 3K images, and Ultra outputs 4K images.",
+        "enum": [
+          "basic",
+          "high",
+          "ultra"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "prompt",
+      "image_urls",
+      "aspect_ratio",
+      "quality"
+    ]
+  },
+  "seedream/5-lite-text-to-image": {
+    "category": "texto-imagem",
+    "category_label": "Texto → Imagem",
+    "constraints": {},
+    "docs_url": "https://docs.kie.ai/market/seedream/5-lite-text-to-image",
+    "id": "seedream/5-lite-text-to-image",
+    "label": "Seedream 5 Lite",
+    "properties": {
+      "aspect_ratio": {
+        "default": "1:1",
+        "description": "Width-height ratio of the image, determining its visual form.",
+        "enum": [
+          "1:1",
+          "4:3",
+          "3:4",
+          "16:9",
+          "9:16",
+          "2:3",
+          "3:2",
+          "21:9"
+        ],
+        "type": "string"
+      },
+      "nsfw_checker": {
+        "description": "Defaults to false. You can set it to false based on your needs. If set to false, our content filtering will be disabled, and all results will be returned directly by the model itself. Note: There is no guarantee that everything can be filtered out; if you are not satisfied with the results, you will need to make your own arrangements.",
+        "type": "boolean"
+      },
+      "output_format": {
+        "default": "png",
+        "description": "Format of the output image",
+        "enum": [
+          "png",
+          "jpeg"
+        ],
+        "type": "string"
+      },
+      "prompt": {
+        "description": "A text description of the image you want to generate (Max length: 3-3000 characters)",
+        "max_length": 3000,
+        "type": "string"
+      },
+      "quality": {
+        "default": "basic",
+        "description": "Basic outputs 2K images, while High outputs 3K images, and Ultra outputs 4K images.",
+        "enum": [
+          "basic",
+          "high",
+          "ultra"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "prompt",
+      "aspect_ratio",
+      "quality"
+    ]
+  },
+  "seedream/5-pro-image-to-image": {
+    "category": "editar-imagem",
+    "category_label": "Editar imagem",
+    "constraints": {},
+    "docs_url": "https://docs.kie.ai/market/seedream/5-pro-image-to-image",
+    "id": "seedream/5-pro-image-to-image",
+    "label": "Seedream 5 Pro — editar",
+    "properties": {
+      "aspect_ratio": {
+        "default": "1:1",
+        "description": "Width-height ratio of the image, determining its visual form.",
+        "enum": [
+          "1:1",
+          "4:3",
+          "3:4",
+          "16:9",
+          "9:16",
+          "2:3",
+          "3:2",
+          "21:9"
+        ],
+        "type": "string"
+      },
+      "image_urls": {
+        "description": "Upload an image file to use as input for the API (File URL after upload, not file content; Accepted types: image/jpeg, image/png, image/webp; Max size: 30.0MB)",
+        "item_type": "string",
+        "max_items": 10,
+        "type": "array"
+      },
+      "nsfw_checker": {
+        "description": "Defaults to false. You can set it to false based on your needs. If set to false, our content filtering will be disabled, and all results will be returned directly by the model itself. Note: There is no guarantee that everything can be filtered out; if you are not satisfied with the results, you will need to make your own arrangements.",
+        "type": "boolean"
+      },
+      "output_format": {
+        "default": "png",
+        "description": "Format of the output image",
+        "enum": [
+          "png",
+          "jpeg"
+        ],
+        "type": "string"
+      },
+      "prompt": {
+        "description": "A text description of the image you want to generate (Max length: 3-5000 characters)",
+        "max_length": 5000,
+        "type": "string"
+      },
+      "quality": {
+        "default": "basic",
+        "description": "Basic outputs 1K images, while High outputs 2K images.",
+        "enum": [
+          "basic",
+          "high"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "prompt",
+      "image_urls",
+      "aspect_ratio",
+      "quality"
+    ]
+  },
+  "seedream/5-pro-text-to-image": {
+    "category": "texto-imagem",
+    "category_label": "Texto → Imagem",
+    "constraints": {},
+    "docs_url": "https://docs.kie.ai/market/seedream/5-pro-text-to-image",
+    "id": "seedream/5-pro-text-to-image",
+    "label": "Seedream 5 Pro",
+    "properties": {
+      "aspect_ratio": {
+        "default": "1:1",
+        "description": "Width-height ratio of the image, determining its visual form.",
+        "enum": [
+          "1:1",
+          "4:3",
+          "3:4",
+          "16:9",
+          "9:16",
+          "2:3",
+          "3:2",
+          "21:9"
+        ],
+        "type": "string"
+      },
+      "nsfw_checker": {
+        "description": "Defaults to false. You can set it to false based on your needs. If set to false, our content filtering will be disabled, and all results will be returned directly by the model itself. Note: There is no guarantee that everything can be filtered out; if you are not satisfied with the results, you will need to make your own arrangements.",
+        "type": "boolean"
+      },
+      "output_format": {
+        "default": "png",
+        "description": "Format of the output image",
+        "enum": [
+          "png",
+          "jpeg"
+        ],
+        "type": "string"
+      },
+      "prompt": {
+        "description": "A text description of the image you want to generate (Max length: 3-5000 characters)",
+        "max_length": 5000,
+        "type": "string"
+      },
+      "quality": {
+        "default": "basic",
+        "description": "Basic outputs 1K images, while High outputs 2K images.",
+        "enum": [
+          "basic",
+          "high"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "prompt",
+      "aspect_ratio",
+      "quality"
+    ]
+  },
   "wan/3-0-video": {
     "category": "referencia-video",
     "category_label": "Referência → Vídeo",
