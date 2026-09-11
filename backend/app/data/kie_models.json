@@ -1,0 +1,539 @@
+{
+  "bytedance/seedance-2": {
+    "category": "texto-video",
+    "category_label": "Texto → Vídeo",
+    "constraints": {
+      "duration_auto_value": -1,
+      "duration_range": [
+        4,
+        30
+      ],
+      "exclusive_with_first_frame": [
+        "reference_image_urls",
+        "reference_video_urls",
+        "reference_audio_urls"
+      ],
+      "requires": {
+        "last_frame_url": "first_frame_url"
+      }
+    },
+    "docs_url": "https://docs.kie.ai/market/bytedance/seedance-2",
+    "id": "bytedance/seedance-2",
+    "label": "Seedance 2.0",
+    "properties": {
+      "aspect_ratio": {
+        "default": "16:9",
+        "description": "Video aspect ratio configuration. Required field.",
+        "enum": [
+          "1:1",
+          "4:3",
+          "3:4",
+          "16:9",
+          "9:16",
+          "21:9",
+          "adaptive"
+        ],
+        "type": "string"
+      },
+      "duration": {
+        "default": 5,
+        "description": "Video duration in 4-15 seconds or -1.",
+        "type": "integer"
+      },
+      "first_frame_url": {
+        "description": "First frame image url or asset://{assetId} (for example: asset://asset-20260404242101-76djj)",
+        "type": "string"
+      },
+      "generate_audio": {
+        "default": true,
+        "description": "Whether to generate audio for the video. - **true**: Generate with audio - **false**: Generate without audio",
+        "type": "boolean"
+      },
+      "last_frame_url": {
+        "description": "End frame image url or asset://{assetId} (for example: asset://asset-20260404242101-76djj)",
+        "type": "string"
+      },
+      "nsfw_checker": {
+        "description": "Defaults to false. You can set it to false based on your needs. If set to false, our content filtering will be disabled, and all results will be returned directly by the model itself. Note: There is no guarantee that everything can be filtered out; if you are not satisfied with the results, you will need to make your own arrangements.",
+        "type": "boolean"
+      },
+      "prompt": {
+        "description": "The text prompt used to generate the video. Required field. (Min length: 3, Max length: 20000 characters)",
+        "max_length": 20000,
+        "type": "string"
+      },
+      "reference_audio_urls": {
+        "description": "Enter a list of audio URLs or asset://{assetId} (for example: asset://asset-20260404242101-76djj) . Single audio requirements: Format: wav, mp3 Duration: Single audio duration [2, 15] s, maximum 3 reference audios, total duration of all audios not exceeding 15 s. Size: Single audio file size not exceeding 15 MB.",
+        "item_type": "string",
+        "max_items": 3,
+        "type": "array"
+      },
+      "reference_image_urls": {
+        "description": "Enter a list of image URLs or asset://{assetId} (for example: asset://asset-20260404242101-76djj). Single image requirements: Format: jpeg, png, webp, bmp, tiff, gif. Aspect ratio (width/height): (0.4, 2.5) Width and height (px): (300, 6000) Size: Single image less than 30 MB. Maximum number of files: The sum of the number of frames at the beginning and end must not exceed 9..",
+        "item_type": "string",
+        "max_items": 9,
+        "type": "array"
+      },
+      "reference_video_urls": {
+        "description": "Enter a list of video URLs or asset://{assetId} (for example: asset://asset-20260404242101-76djj) . Single video requirements: Video format: mp4, mov. Resolution: 480p, 720p Duration: Single video duration [2, 15] s, maximum 3 reference videos, total duration of all videos not exceeding 15 seconds. Dimensions: Aspect ratio (width/height): [0.4, 2.5] Width/height (px): [300, 6000] Total pixels: [640×640=409600, 834×1112=927408], i.e., the product of width and height must meet the range requiremen",
+        "item_type": "string",
+        "max_items": 3,
+        "type": "array"
+      },
+      "resolution": {
+        "default": "720p",
+        "description": "Video resolution - 480p for faster generation, 720p for balance, 1080p for High-quality video, 4K Ultra-High Definition, delivering perfect visual details.",
+        "enum": [
+          "480p",
+          "720p",
+          "1080p",
+          "4k"
+        ],
+        "type": "string"
+      },
+      "return_last_frame": {
+        "default": false,
+        "description": "Whether to return the last frame of the video as an image.",
+        "type": "boolean"
+      },
+      "web_search": {
+        "description": "Use online search",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "prompt"
+    ]
+  },
+  "bytedance/seedance-2-5": {
+    "category": "texto-video",
+    "category_label": "Texto → Vídeo",
+    "constraints": {
+      "duration_auto_value": -1,
+      "duration_range": [
+        4,
+        30
+      ],
+      "exclusive_with_first_frame": [
+        "reference_image_urls",
+        "reference_video_urls",
+        "reference_audio_urls"
+      ],
+      "requires": {
+        "last_frame_url": "first_frame_url"
+      }
+    },
+    "docs_url": "https://docs.kie.ai/market/bytedance/seedance-2-5",
+    "id": "bytedance/seedance-2-5",
+    "label": "Seedance 2.5",
+    "properties": {
+      "aspect_ratio": {
+        "default": "adaptive",
+        "description": "Video aspect ratio configuration.",
+        "enum": [
+          "1:1",
+          "4:3",
+          "3:4",
+          "16:9",
+          "9:16",
+          "21:9",
+          "adaptive"
+        ],
+        "type": "string"
+      },
+      "duration": {
+        "default": 5,
+        "description": "Video duration in 4-30 seconds. Special values -1: Pass -1 for automatic duration selection — the model picks a suitable duration itself (for video-editing tasks, it matches the input video's length; for other task types, it selects within the valid range), instead of you specifying an exact value.",
+        "type": "integer"
+      },
+      "first_frame_url": {
+        "description": "First frame image url or asset://{assetId} (for example: asset://asset-20260404242101-76djj) Cannot be used simultaneously with reference_image_urls, reference_video_urls, or reference_audio_urls.",
+        "type": "string"
+      },
+      "generate_audio": {
+        "default": true,
+        "description": "Whether to generate audio for the video. - **true**: Generate with audio (higher cost) - **false**: Generate without audio Note: Enabling audio will increase the generation cost",
+        "type": "boolean"
+      },
+      "last_frame_url": {
+        "description": "End frame image url or asset://{assetId} (for example: asset://asset-20260404242101-76djj) last_frame_url cannot be passed alone; first_frame_url must be provided together with it.",
+        "type": "string"
+      },
+      "nsfw_checker": {
+        "description": "Defaults to false. You can set it to false based on your needs. If set to false, our content filtering will be disabled, and all results will be returned directly by the model itself. Note: There is no guarantee that everything can be filtered out; if you are not satisfied with the results, you will need to make your own arrangements.",
+        "type": "boolean"
+      },
+      "output_format": {
+        "default": "mp4",
+        "description": "Video output format.",
+        "enum": [
+          "mp4",
+          "mov"
+        ],
+        "type": "string"
+      },
+      "prompt": {
+        "description": "The text prompt used to generate the video.. ( Max length: 30000 characters)",
+        "max_length": 30000,
+        "type": "string"
+      },
+      "reference_audio_urls": {
+        "description": "Enter a list of audio URLs or asset://{assetId} (for example: asset://asset-20260404242101-76djj) . Single audio requirements: Format: wav, mp3 Size: Single audio file size not exceeding 15 MB. Single audio duration: [2, 30] seconds; Mutually exclusive with the first/last-frame scenario; Total duration of reference videos must not exceed 30 seconds.",
+        "item_type": "string",
+        "max_items": 10,
+        "type": "array"
+      },
+      "reference_image_urls": {
+        "description": "Enter a list of image URLs or asset://{assetId} (for example: asset://asset-20260404242101-76djj). Single image requirements: Format: jpeg, png, webp, bmp, tiff, gif. Aspect ratio (width/height): (0.4, 2.5) Width and height (px): (300, 6000) Size: Single image less than 30 MB. Maximum number of files: The sum of the number of frames at the beginning and end must not exceed 30. Mutually exclusive with the first/last-frame scenario;",
+        "item_type": "string",
+        "max_items": 30,
+        "type": "array"
+      },
+      "reference_video_urls": {
+        "description": "Enter a list of video URLs or asset://{assetId} (for example: asset://asset-20260404242101-76djj) . Single video requirements: Video format: mp4, mov. Resolution: 480p, 720p Dimensions: Aspect ratio (width/height): [0.4, 2.5] Width/height (px): [300, 6000] Total pixels: [640×640=409600, 834×1112=927408], i.e., the product of width and height must meet the range requirement of [409600, 927408]. Size: Single video not exceeding 200 MB. Frame rate (FPS): [24, 60] Single video duration: [2, 30] seco",
+        "item_type": "string",
+        "max_items": 10,
+        "type": "array"
+      },
+      "resolution": {
+        "default": "720p",
+        "description": "Video resolution - 480p for faster generation, 720p for balance.",
+        "enum": [
+          "480p",
+          "720p",
+          "1080p"
+        ],
+        "type": "string"
+      },
+      "return_last_frame": {
+        "default": false,
+        "description": "Whether to return the last frame of the video. When draft=true, this parameter cannot be set to true.",
+        "type": "boolean"
+      },
+      "web_search": {
+        "description": "Enable online search.",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "prompt"
+    ]
+  },
+  "bytedance/seedance-2-fast": {
+    "category": "texto-video",
+    "category_label": "Texto → Vídeo",
+    "constraints": {
+      "duration_auto_value": -1,
+      "duration_range": [
+        4,
+        30
+      ],
+      "exclusive_with_first_frame": [
+        "reference_image_urls",
+        "reference_video_urls",
+        "reference_audio_urls"
+      ],
+      "requires": {
+        "last_frame_url": "first_frame_url"
+      }
+    },
+    "docs_url": "https://docs.kie.ai/market/bytedance/seedance-2-fast",
+    "id": "bytedance/seedance-2-fast",
+    "label": "Seedance 2.0 Fast",
+    "properties": {
+      "aspect_ratio": {
+        "default": "16:9",
+        "description": "Video aspect ratio configuration. Required field.",
+        "enum": [
+          "1:1",
+          "4:3",
+          "3:4",
+          "16:9",
+          "9:16",
+          "21:9",
+          "adaptive"
+        ],
+        "type": "string"
+      },
+      "duration": {
+        "default": 5,
+        "description": "Video duration in 4-15 seconds or -1.",
+        "type": "integer"
+      },
+      "first_frame_url": {
+        "description": "First frame image url or asset://{assetId} (for example: asset://asset-20260404242101-76djj)",
+        "type": "string"
+      },
+      "generate_audio": {
+        "default": true,
+        "description": "Whether to generate audio for the video. - **true**: Generate with audio - **false**: Generate without audio",
+        "type": "boolean"
+      },
+      "last_frame_url": {
+        "description": "End frame image url or asset://{assetId} (for example: asset://asset-20260404242101-76djj)",
+        "type": "string"
+      },
+      "nsfw_checker": {
+        "description": "Defaults to false. You can set it to false based on your needs. If set to false, our content filtering will be disabled, and all results will be returned directly by the model itself. Note: There is no guarantee that everything can be filtered out; if you are not satisfied with the results, you will need to make your own arrangements.",
+        "type": "boolean"
+      },
+      "prompt": {
+        "description": "The text prompt used to generate the video. Required field. (Min length: 3, Max length: 20000 characters)",
+        "max_length": 20000,
+        "type": "string"
+      },
+      "reference_audio_urls": {
+        "description": "Enter a list of audio URLs or asset://{assetId} (for example: asset://asset-20260404242101-76djj). Single audio requirements: Format: wav, mp3 Duration: Single audio duration [2, 15] s, maximum 3 reference audios, total duration of all audios not exceeding 15 s. Size: Single audio file size not exceeding 15 MB.",
+        "item_type": "string",
+        "max_items": 3,
+        "type": "array"
+      },
+      "reference_image_urls": {
+        "description": "Enter a list of image URLs or asset://{assetId} (for example: asset://asset-20260404242101-76djj). Single image requirements: Format: jpeg, png, webp, bmp, tiff, gif. Aspect ratio (width/height): (0.4, 2.5) Width and height (px): (300, 6000) Size: Single image less than 30 MB. Maximum number of files: The sum of the number of frames at the beginning and end must not exceed 9..",
+        "item_type": "string",
+        "max_items": 9,
+        "type": "array"
+      },
+      "reference_video_urls ": {
+        "description": "Enter a list of video URLs or asset://{assetId} (for example: asset://asset-20260404242101-76djj). Single video requirements: Video format: mp4, mov. Resolution: 480p, 720p Duration: Single video duration [2, 15] s, maximum 3 reference videos, total duration of all videos not exceeding 15 seconds. Dimensions: Aspect ratio (width/height): [0.4, 2.5] Width/height (px): [300, 6000] Total pixels: [640×640=409600, 834×1112=927408], i.e., the product of width and height must meet the range requirement",
+        "item_type": "string",
+        "max_items": 3,
+        "type": "array"
+      },
+      "resolution": {
+        "default": "720p",
+        "description": "Video resolution - 480p for faster generation, 720p for balance",
+        "enum": [
+          "480p",
+          "720p"
+        ],
+        "type": "string"
+      },
+      "return_last_frame": {
+        "default": false,
+        "description": "Whether to return the last frame of the video as an image.",
+        "type": "boolean"
+      },
+      "web_search": {
+        "description": "Use online search. (Web search only can be used in the scene of t2v)",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "prompt"
+    ]
+  },
+  "google/gemini-omni-flash-1-1": {
+    "category": "referencia-video",
+    "category_label": "Referência → Vídeo",
+    "constraints": {
+      "exclusive_with_first_frame": [
+        "image_urls",
+        "audio_ids",
+        "video_list",
+        "character_ids"
+      ],
+      "requires": {
+        "last_frame_url": "first_frame_url"
+      },
+      "slots": {
+        "total": 7,
+        "weights": {
+          "character_ids": 1,
+          "image_urls": 1,
+          "video_list": 2
+        }
+      }
+    },
+    "docs_url": "https://docs.kie.ai/market/google/gemini-omni-flash-1-1",
+    "id": "google/gemini-omni-flash-1-1",
+    "label": "Gemini Omni 1.1 Flash",
+    "properties": {
+      "aspect_ratio": {
+        "description": "The aspect ratio of the generated video. `16:9` is landscape, and `9:16` is portrait.",
+        "enum": [
+          "16:9",
+          "9:16"
+        ],
+        "type": "string"
+      },
+      "audio_ids": {
+        "description": "An array of audio IDs generated by the `gemini-omni-audio` interface. Used to provide narration, dialogue, background music, or sound references for the video. Up to 3 items. Note: This field is mutually exclusive with the first-frame image (`first_frame_url`) and cannot be provided at the same time.",
+        "item_type": "string",
+        "type": "array"
+      },
+      "character_ids": {
+        "description": "An array of character IDs generated by the `gemini-omni-character` interface. Used to provide character appearance, identity, or person references for the video. Each character_id occupies 1 image slot; the basic maximum is 7. If `video_list` is provided at the same time, `video_list` occupies 2 image slots, and a maximum of 3 character_ids can be provided. Note: This field is mutually exclusive with the first-frame image (`first_frame_url`) and cannot be provided at the same time.If the incomin",
+        "item_type": "string",
+        "type": "array"
+      },
+      "duration": {
+        "description": "The duration of the generated video, in seconds. Valid values are 4, 6, 8, and 10. This parameter only takes effect when there is no video input. If video input is used, the output duration is determined by the model, and the `duration` parameter will be ignored. Note: When video input is provided, the output duration is automatically determined by the model. In this case, the `duration` parameter will not take effect.",
+        "enum": [
+          "4",
+          "6",
+          "8",
+          "10"
+        ],
+        "type": "string"
+      },
+      "first_frame_url": {
+        "description": "The URL of the first-frame image. Used to specify the starting frame of the generated video. Note: This field is mutually exclusive with `image_urls`, `audio_ids`, `video_list`, and `character_ids` and cannot be provided at the same time.",
+        "type": "string"
+      },
+      "image_urls": {
+        "description": "An array of image URLs. Multiple reference images can be uploaded to provide references for characters, scenes, styles, or storyboards. Image limitations: - Each file must not exceed `20MB` - Use publicly accessible image URLs - Maximum of 7 images - Note: This field is mutually exclusive with the first-frame image (`first_frame_url`) and cannot be provided at the same time.",
+        "item_type": "string",
+        "type": "array"
+      },
+      "last_frame_url": {
+        "description": "The URL of the last-frame image. Used to specify the ending frame of the generated video. Note: The last-frame image cannot be used alone and must be provided together with the first-frame image (`first_frame_url`).",
+        "type": "string"
+      },
+      "prompt": {
+        "description": "The video prompt, used to describe the visual content, style, cinematography, or character actions of the target video.",
+        "max_length": 20000,
+        "type": "string"
+      },
+      "resolution": {
+        "default": "720p",
+        "description": "The resolution of the generated video. Valid values are 360p, 720p, 1080p, and 4k.",
+        "enum": [
+          "360p",
+          "720p",
+          "1080p",
+          "4k"
+        ],
+        "type": "string"
+      },
+      "seed": {
+        "description": "The random seed. Valid range: [0, 2147483647]. If not specified, the system will automatically generate a seed. A fixed seed can improve result reproducibility, but because the model itself is stochastic, results may still vary.",
+        "type": "integer"
+      },
+      "video_list": {
+        "description": "An array of video clips. Each element describes a video asset that can be used for generation and its trimming time range. Video limitations: - Each file must not exceed `100MB` - Video duration must not exceed `30s` - `ends` should be greater than `start` - The difference between the end and start times must not exceed `10s` - Maximum of 1 item, occupying two image slots - Note: This field is mutually exclusive with the first-frame image (`first_frame_url`) and cannot be provided at the same ti",
+        "item_type": "object",
+        "type": "array"
+      }
+    },
+    "required": [
+      "prompt",
+      "duration"
+    ]
+  },
+  "wan/3-0-video": {
+    "category": "referencia-video",
+    "category_label": "Referência → Vídeo",
+    "constraints": {
+      "duration_auto_value": -1,
+      "duration_range": [
+        2,
+        30
+      ],
+      "exclusive_with_first_frame": [
+        "reference_image_urls",
+        "reference_video_urls",
+        "reference_audio_urls",
+        "reference_file_urls",
+        "reference_link_urls"
+      ],
+      "requires": {
+        "last_frame_url": "first_frame_url"
+      }
+    },
+    "docs_url": "https://docs.kie.ai/market/wan/3-0-video",
+    "id": "wan/3-0-video",
+    "label": "Wan 3.0",
+    "properties": {
+      "aspect_ratio": {
+        "default": "adaptive",
+        "description": "Output aspect ratio. `adaptive` (default) automatically selects the ratio based on the input media and intent.",
+        "enum": [
+          "adaptive",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ],
+        "type": "string"
+      },
+      "audio": {
+        "default": true,
+        "description": "Whether the output video includes an audio track. Default: true.",
+        "type": "boolean"
+      },
+      "duration": {
+        "default": 5,
+        "description": "Output video duration in seconds. Default: 5. Without video input, the range is [2, 30]. With reference videos: input video duration + output duration ≤ 30. Pass `-1` to use an intelligent duration determined by the model.",
+        "type": "integer"
+      },
+      "first_frame_url": {
+        "description": "URL of the first-frame image. Up to 1 image, used strictly as the first frame of the video. Used for first-frame-to-video / first-and-last-frame-to-video generation. Cannot be provided together with `reference_*_urls`. Formats: JPEG/JPG, PNG (transparency not supported), BMP, WEBP; each side [240, 8000] px; aspect ratio ≤ 8:1; ≤ 20MB.",
+        "type": "string"
+      },
+      "last_frame_url": {
+        "description": "URL of the first-frame image. Up to 1 image, used strictly as the first frame of the video. Used for first-frame-to-video / first-and-last-frame-to-video generation. Cannot be provided together with `reference_*_urls`. Formats: JPEG/JPG, PNG (transparency not supported), BMP, WEBP; each side [240, 8000] px; aspect ratio ≤ 8:1; ≤ 20MB.",
+        "type": "string"
+      },
+      "nsfw_checker": {
+        "description": "Defaults to false. You can set it to false based on your needs. If set to false, our content filtering will be disabled, and all results will be returned directly by the model itself. Note: There is no guarantee that everything can be filtered out; if you are not satisfied with the results, you will need to make your own arrangements.",
+        "type": "boolean"
+      },
+      "prompt": {
+        "description": "Text prompt, supporting both Chinese and English. Up to 20,000 characters; excess characters will be truncated automatically. Required for text-to-video generation; for other modes, it is recommended to provide it together with media. In reference mode, use Image1/Video1/Audio1 to reference the provided media.",
+        "max_length": 20000,
+        "type": "string"
+      },
+      "reference_audio_urls": {
+        "description": "Reference audio for the all-purpose reference mode, with up to 5 clips. Each clip must be 1–15 seconds, with a total duration ≤ 15 seconds. Correspond to Audio1, Audio2, … according to array order. Formats: wav, mp3; ≤ 15MB. Audio should not be used alone as the only media input; pairing it with an image or video is still recommended.",
+        "item_type": "string",
+        "max_items": 5,
+        "type": "array"
+      },
+      "reference_file_urls": {
+        "description": "File-to-video generation. Up to 1 file. Cannot be provided together with `reference_link_urls`, or with the first-frame/last-frame parameters. Formats: docx/doc/xlsx/xls/pptx/ppt/pdf/txt/key/pages/numbers/md; ≤ 100MB; pdf/docx/ppt/key/pages, etc. ≤ 50 pages.",
+        "item_type": "string",
+        "max_items": 1,
+        "type": "array"
+      },
+      "reference_image_urls": {
+        "description": "Reference images for the all-purpose reference mode, with up to 10 images. Correspond to Image1, Image2, … in the prompt according to array order. Specifications are the same as `first_frame_url`. Cannot be provided together with the first-frame/last-frame parameters.",
+        "item_type": "string",
+        "max_items": 10,
+        "type": "array"
+      },
+      "reference_link_urls": {
+        "description": "Link-to-video generation. Up to 1 publicly accessible webpage that does not require login. Cannot be provided together with `reference_file_urls`, or with the first-frame/last-frame parameters.",
+        "item_type": "string",
+        "max_items": 1,
+        "type": "array"
+      },
+      "reference_video_urls": {
+        "description": "Reference videos for the all-purpose reference mode, with up to 5 clips. Each clip must be 1–15 seconds, with a total duration ≤ 15 seconds. Correspond to Video1, Video2, … according to array order. Formats: mp4, mov; each side [240, 4096] px; aspect ratio ≤ 8:1; each file ≤ 100MB. There is an additional constraint on the output side: the input video duration + `duration` must not exceed 30 seconds.",
+        "item_type": "string",
+        "max_items": 5,
+        "type": "array"
+      },
+      "resolution": {
+        "default": "1080P",
+        "description": "Output resolution. Default: **1080P**.",
+        "enum": [
+          "480P",
+          "720P",
+          "1080P"
+        ],
+        "type": "string"
+      },
+      "seed": {
+        "description": "Random seed used to reproduce results. If omitted, a random seed will be used.",
+        "maximum": 2147483647,
+        "minimum": 0,
+        "type": "integer"
+      }
+    },
+    "required": [
+      "prompt"
+    ]
+  }
+}

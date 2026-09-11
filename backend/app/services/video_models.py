@@ -1,201 +1,248 @@
 """
-Input building and validation for Kie.ai video models.
+Schema-driven input building for Kie.ai video models.
 
-Every rule here comes from the model's published schema. Validating locally
-matters because a rejected request still costs a round trip, and a malformed
-one can cost credits — it is cheaper to fail here with a clear message.
+Nothing about a model's parameters is written here. The catalog in
+``app/data/kie_models.json`` is generated from Kie.ai's own published OpenAPI
+docs (see ``scripts/fetch_kie_schemas.py``), and both the validation below and
+the form the UI renders come from it. Adding a model means regenerating the
+catalog, not writing code.
 
-Currently implemented: Gemini Omni 1.1 Flash (google/gemini-omni-flash-1-1).
-The other catalogued models share the createTask/recordInfo envelope but have
-their own input schemas, so each needs its own builder before being exposed.
+The catalog carries two kinds of rules:
+
+- Per-field, from the schema: types, enums, defaults, string and array limits,
+  numeric ranges.
+- Cross-field, from the models' prose documentation: which references are
+  mutually exclusive, which field requires another, and the upload "slot"
+  budget. Those cannot be expressed in JSON Schema, so the generator encodes
+  them under ``constraints`` with the source quoted.
 """
 
+import json
+import logging
+from functools import lru_cache
+from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
+
+CATALOG_PATH = Path(__file__).resolve().parents[1] / "data" / "kie_models.json"
 
 GEMINI_OMNI_FLASH = "google/gemini-omni-flash-1-1"
 
-SUPPORTED_MODELS = (GEMINI_OMNI_FLASH,)
-
-# --- Gemini Omni 1.1 Flash schema constants ---------------------------------
-OMNI_DURATIONS = ("4", "6", "8", "10")
-OMNI_ASPECT_RATIOS = ("16:9", "9:16")
-OMNI_RESOLUTIONS = ("360p", "720p", "1080p", "4k")
-OMNI_PROMPT_MAX_LENGTH = 20000
-OMNI_SEED_MAX = 2147483647
-
-# The provider budgets uploads in "slots": images 1 each, videos 2 each,
-# character ids 1 each, with a total of 7.
-OMNI_TOTAL_SLOTS = 7
-OMNI_MAX_IMAGES = 7
-OMNI_MAX_VIDEOS = 1
-OMNI_MAX_AUDIO_IDS = 3
-OMNI_MAX_CHARACTER_IDS = 3
-OMNI_MAX_CLIP_SECONDS = 10.0
-
-# first_frame_url cannot be combined with any of these.
-OMNI_FIRST_FRAME_CONFLICTS = ("image_urls", "audio_ids", "video_list", "character_ids")
+# Fields that hold references, in the order the slot budget counts them.
+FIRST_FRAME_FIELD = "first_frame_url"
 
 
 class VideoInputError(ValueError):
-    """The requested generation input violates the model's schema."""
+    """The requested generation input violates the model's published schema."""
 
 
-def build_gemini_omni_input(
-    prompt: str,
-    duration: str = "8",
-    aspect_ratio: str = "9:16",
-    resolution: str = "720p",
-    image_urls: Optional[List[str]] = None,
-    first_frame_url: Optional[str] = None,
-    last_frame_url: Optional[str] = None,
-    audio_ids: Optional[List[str]] = None,
-    video_list: Optional[List[Dict[str, Any]]] = None,
-    character_ids: Optional[List[str]] = None,
-    seed: Optional[int] = None,
-) -> Dict[str, Any]:
-    """
-    Build and validate the `input` object for Gemini Omni 1.1 Flash.
+@lru_cache(maxsize=1)
+def load_catalog() -> Dict[str, Dict[str, Any]]:
+    """The generated model catalog, read once per process."""
+    try:
+        return json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        logger.error("Model catalog missing at %s", CATALOG_PATH)
+        return {}
+    except json.JSONDecodeError as exc:
+        logger.error("Model catalog is not valid JSON: %s", exc)
+        return {}
 
-    Defaults lean vertical (9:16) because the editor targets Reels and TikTok.
-    """
-    prompt = (prompt or "").strip()
-    if not prompt:
-        raise VideoInputError("Descreva o vídeo: o prompt não pode ficar vazio.")
-    if len(prompt) > OMNI_PROMPT_MAX_LENGTH:
+
+def supported_models() -> List[str]:
+    return sorted(load_catalog().keys())
+
+
+def get_model(model_id: str) -> Optional[Dict[str, Any]]:
+    return load_catalog().get(model_id)
+
+
+def require_model(model_id: str) -> Dict[str, Any]:
+    model = get_model(model_id)
+    if model is None:
+        available = ", ".join(supported_models()) or "nenhum"
         raise VideoInputError(
-            f"O prompt tem {len(prompt)} caracteres; o limite é {OMNI_PROMPT_MAX_LENGTH}."
+            f"O modelo '{model_id}' não está no catálogo. Disponíveis: {available}."
+        )
+    return model
+
+
+# ----------------------------------------------------------------------
+# Per-field validation
+# ----------------------------------------------------------------------
+def _coerce_and_check(name: str, spec: Dict[str, Any], value: Any) -> Any:
+    declared = spec.get("type", "string")
+
+    if declared == "boolean":
+        if not isinstance(value, bool):
+            raise VideoInputError(f"'{name}' deve ser verdadeiro ou falso.")
+        return value
+
+    if declared == "integer":
+        try:
+            number = int(value)
+        except (TypeError, ValueError) as exc:
+            raise VideoInputError(f"'{name}' deve ser um número inteiro.") from exc
+        _check_range(name, spec, number)
+        return number
+
+    if declared == "number":
+        try:
+            number = float(value)
+        except (TypeError, ValueError) as exc:
+            raise VideoInputError(f"'{name}' deve ser um número.") from exc
+        _check_range(name, spec, number)
+        return number
+
+    if declared == "array":
+        if not isinstance(value, (list, tuple)):
+            raise VideoInputError(f"'{name}' deve ser uma lista.")
+        items = [item for item in value if item not in (None, "")]
+        max_items = spec.get("max_items")
+        if max_items is not None and len(items) > max_items:
+            raise VideoInputError(f"'{name}': no máximo {max_items} itens.")
+        if spec.get("item_type") == "string":
+            items = [str(item) for item in items]
+        return items
+
+    # Strings, including enum-constrained ones.
+    text = str(value)
+    enum = spec.get("enum")
+    if enum and text not in enum:
+        raise VideoInputError(
+            f"'{name}' inválido: {text}. Use um de: {', '.join(enum)}."
+        )
+    max_length = spec.get("max_length")
+    if max_length is not None and len(text) > max_length:
+        raise VideoInputError(
+            f"'{name}' tem {len(text)} caracteres; o limite é {max_length}."
+        )
+    return text
+
+
+def _check_range(name: str, spec: Dict[str, Any], number: float) -> None:
+    minimum = spec.get("minimum")
+    maximum = spec.get("maximum")
+    if minimum is not None and number < minimum:
+        raise VideoInputError(f"'{name}' não pode ser menor que {minimum}.")
+    if maximum is not None and number > maximum:
+        raise VideoInputError(f"'{name}' não pode ser maior que {maximum}.")
+
+
+def _check_enum_for_integer(name: str, spec: Dict[str, Any], value: Any) -> None:
+    """Some enums are declared on integer fields; honour them too."""
+    enum = spec.get("enum")
+    if enum and str(value) not in enum:
+        raise VideoInputError(
+            f"'{name}' inválido: {value}. Use um de: {', '.join(enum)}."
         )
 
-    duration = str(duration)
-    if duration not in OMNI_DURATIONS:
-        raise VideoInputError(
-            f"Duração inválida: {duration}s. Use uma de {', '.join(OMNI_DURATIONS)} segundos."
-        )
 
-    if aspect_ratio not in OMNI_ASPECT_RATIOS:
-        raise VideoInputError(
-            f"Proporção inválida: {aspect_ratio}. Use {' ou '.join(OMNI_ASPECT_RATIOS)}."
-        )
+# ----------------------------------------------------------------------
+# Cross-field constraints
+# ----------------------------------------------------------------------
+def _apply_constraints(model: Dict[str, Any], payload: Dict[str, Any]) -> None:
+    constraints = model.get("constraints") or {}
 
-    if resolution not in OMNI_RESOLUTIONS:
-        raise VideoInputError(
-            f"Resolução inválida: {resolution}. Use uma de {', '.join(OMNI_RESOLUTIONS)}."
-        )
-
-    image_urls = list(image_urls or [])
-    audio_ids = list(audio_ids or [])
-    video_list = list(video_list or [])
-    character_ids = list(character_ids or [])
-
-    payload: Dict[str, Any] = {
-        "prompt": prompt,
-        "duration": duration,
-        "aspect_ratio": aspect_ratio,
-        "resolution": resolution,
-    }
-
-    if seed is not None:
-        if not 0 <= seed <= OMNI_SEED_MAX:
-            raise VideoInputError(f"Seed fora do intervalo (0 a {OMNI_SEED_MAX}).")
-        payload["seed"] = seed
-
-    # --- first/last frame rules ---
-    if last_frame_url and not first_frame_url:
-        raise VideoInputError(
-            "O último quadro só pode ser usado junto com o primeiro quadro."
-        )
-
-    if first_frame_url:
-        conflicting = {
-            "image_urls": image_urls,
-            "audio_ids": audio_ids,
-            "video_list": video_list,
-            "character_ids": character_ids,
-        }
-        used = [name for name in OMNI_FIRST_FRAME_CONFLICTS if conflicting[name]]
-        if used:
+    # "X must be provided together with Y"
+    for field, prerequisite in (constraints.get("requires") or {}).items():
+        if payload.get(field) and not payload.get(prerequisite):
             raise VideoInputError(
-                "Quando você define o primeiro quadro, não dá para enviar também: "
-                + ", ".join(used)
-                + ". Escolha um caminho ou outro."
+                f"'{field}' só pode ser usado junto com '{prerequisite}'."
             )
 
-        payload["first_frame_url"] = first_frame_url
-        if last_frame_url:
-            payload["last_frame_url"] = last_frame_url
-        return payload
+    # "first frame is mutually exclusive with these references"
+    excluded = constraints.get("exclusive_with_first_frame") or []
+    if payload.get(FIRST_FRAME_FIELD):
+        clashing = [field for field in excluded if payload.get(field)]
+        if clashing:
+            raise VideoInputError(
+                "Com o primeiro quadro definido, não dá para enviar também: "
+                + ", ".join(clashing)
+                + ". São caminhos alternativos."
+            )
 
-    # --- multimodal reference rules ---
-    if len(image_urls) > OMNI_MAX_IMAGES:
-        raise VideoInputError(f"No máximo {OMNI_MAX_IMAGES} imagens de referência.")
-    if len(video_list) > OMNI_MAX_VIDEOS:
-        raise VideoInputError(f"No máximo {OMNI_MAX_VIDEOS} vídeo de referência.")
-    if len(audio_ids) > OMNI_MAX_AUDIO_IDS:
-        raise VideoInputError(f"No máximo {OMNI_MAX_AUDIO_IDS} áudios de referência.")
-    if video_list and len(character_ids) > OMNI_MAX_CHARACTER_IDS:
+    # Duration range that lives in prose rather than in the schema.
+    duration_range = constraints.get("duration_range")
+    if duration_range and "duration" in payload:
+        try:
+            duration = int(payload["duration"])
+        except (TypeError, ValueError):
+            duration = None
+
+        auto_value = constraints.get("duration_auto_value")
+        if duration is not None and duration != auto_value:
+            low, high = duration_range
+            if not low <= duration <= high:
+                extra = f" (ou {auto_value} para automático)" if auto_value is not None else ""
+                raise VideoInputError(
+                    f"Duração fora do intervalo: {duration}s. "
+                    f"Use entre {low} e {high} segundos{extra}."
+                )
+
+    # Upload slot budget: each reference type costs a documented weight.
+    slots = constraints.get("slots")
+    if slots:
+        weights: Dict[str, int] = slots.get("weights", {})
+        used = sum(len(payload.get(field) or []) * weight for field, weight in weights.items())
+        total = slots.get("total", 0)
+        if used > total:
+            detail = ", ".join(f"{field} vale {weight}" for field, weight in weights.items())
+            raise VideoInputError(
+                f"Referências demais: {used} de {total} vagas. ({detail}.)"
+            )
+
+
+# ----------------------------------------------------------------------
+# Public entry point
+# ----------------------------------------------------------------------
+def build_input(model_id: str, values: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Validate `values` against the model's schema and return the `input` object
+    for createTask.
+
+    Unknown keys are rejected rather than forwarded: a typo that the provider
+    silently ignores would otherwise look like it worked and still cost credits.
+    """
+    model = require_model(model_id)
+    properties: Dict[str, Any] = model.get("properties") or {}
+
+    supplied = {
+        key: value
+        for key, value in (values or {}).items()
+        if value is not None and value != "" and value != []
+    }
+
+    unknown = sorted(set(supplied) - set(properties))
+    if unknown:
         raise VideoInputError(
-            f"Com um vídeo de referência, no máximo {OMNI_MAX_CHARACTER_IDS} personagens."
+            f"Parâmetros que {model['label']} não aceita: {', '.join(unknown)}."
         )
 
-    slots = len(image_urls) + (len(video_list) * 2) + len(character_ids)
-    if slots > OMNI_TOTAL_SLOTS:
-        raise VideoInputError(
-            f"Referências demais: {slots} de {OMNI_TOTAL_SLOTS} vagas. "
-            "Cada imagem e personagem ocupa 1 vaga, cada vídeo ocupa 2."
-        )
+    payload: Dict[str, Any] = {}
+    for name, value in supplied.items():
+        spec = properties[name]
+        checked = _coerce_and_check(name, spec, value)
+        if spec.get("type") in ("integer", "number"):
+            _check_enum_for_integer(name, spec, checked)
+        payload[name] = checked
 
-    for index, clip in enumerate(video_list, start=1):
-        payload_clip = _validate_clip(clip, index)
-        clip.update(payload_clip)
+    for name in model.get("required") or []:
+        if name not in payload:
+            raise VideoInputError(
+                f"'{name}' é obrigatório para {model['label']}."
+            )
 
-    if image_urls:
-        payload["image_urls"] = image_urls
-    if audio_ids:
-        payload["audio_ids"] = audio_ids
-    if video_list:
-        payload["video_list"] = video_list
-    if character_ids:
-        payload["character_ids"] = character_ids
-
+    _apply_constraints(model, payload)
     return payload
 
 
-def _validate_clip(clip: Dict[str, Any], index: int) -> Dict[str, Any]:
-    """Each reference clip needs url/start/ends, with a window of up to 10s."""
-    if not isinstance(clip, dict):
-        raise VideoInputError(f"Vídeo de referência {index} está em formato inválido.")
-
-    url = clip.get("url")
-    if not url:
-        raise VideoInputError(f"Vídeo de referência {index}: falta a URL.")
-
-    try:
-        start = float(clip.get("start", 0))
-        ends = float(clip["ends"])
-    except (KeyError, TypeError, ValueError) as exc:
-        raise VideoInputError(
-            f"Vídeo de referência {index}: informe 'start' e 'ends' em segundos."
-        ) from exc
-
-    if start < 0:
-        raise VideoInputError(f"Vídeo de referência {index}: 'start' não pode ser negativo.")
-    if ends <= start:
-        raise VideoInputError(f"Vídeo de referência {index}: 'ends' precisa ser maior que 'start'.")
-    if ends - start > OMNI_MAX_CLIP_SECONDS:
-        raise VideoInputError(
-            f"Vídeo de referência {index}: o trecho tem {ends - start:.1f}s. "
-            f"O máximo é {OMNI_MAX_CLIP_SECONDS:.0f}s."
-        )
-
-    return {"url": str(url), "start": start, "ends": ends}
-
-
-def build_input(model: str, **kwargs) -> Dict[str, Any]:
-    """Dispatch to the builder for `model`."""
-    if model == GEMINI_OMNI_FLASH:
-        return build_gemini_omni_input(**kwargs)
-
-    raise VideoInputError(
-        f"O modelo '{model}' ainda não tem geração implementada. "
-        f"Disponível agora: {', '.join(SUPPORTED_MODELS)}."
-    )
+def default_values(model_id: str) -> Dict[str, Any]:
+    """The model's own declared defaults — what the form should open with."""
+    model = require_model(model_id)
+    return {
+        name: spec["default"]
+        for name, spec in (model.get("properties") or {}).items()
+        if "default" in spec
+    }

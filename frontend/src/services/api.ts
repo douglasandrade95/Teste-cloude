@@ -154,20 +154,35 @@ export async function testProviderKey(
 
 const generate = '/api/v1/generate'
 
-export interface GenerationModelInfo {
-  id: string
-  label: string
-  implemented: boolean
-  durations: string[]
-  aspect_ratios: string[]
-  resolutions: string[]
-  notes: string
+/** One parameter as the provider publishes it. The form is built from these. */
+export interface FieldSpec {
+  name: string
+  type: 'string' | 'integer' | 'number' | 'boolean' | 'array' | string
+  item_type: string | null
+  enum: string[] | null
+  default: unknown
+  max_length: number | null
+  max_items: number | null
+  minimum: number | null
+  maximum: number | null
+  description: string
+  required: boolean
 }
 
-export interface GenerationCapabilities {
+export interface ModelSpec {
+  id: string
+  label: string
+  category: string
+  category_label: string
+  docs_url: string
+  fields: FieldSpec[]
+  constraints: Record<string, unknown>
+}
+
+export interface GenerationCatalog {
   configured: boolean
-  models: GenerationModelInfo[]
-  options: Record<string, number>
+  models: ModelSpec[]
+  categories: { id: string; label: string }[]
 }
 
 export interface TaskStatus {
@@ -185,16 +200,11 @@ export interface TaskStatus {
 
 export interface GenerateVideoParams {
   model: string
-  prompt: string
-  duration: string
-  aspect_ratio: string
-  resolution: string
-  image_urls?: string[]
-  seed?: number
+  values: Record<string, unknown>
 }
 
-export async function fetchCapabilities(): Promise<GenerationCapabilities> {
-  const { data } = await api.get<GenerationCapabilities>(`${generate}/capabilities`)
+export async function fetchCatalog(): Promise<GenerationCatalog> {
+  const { data } = await api.get<GenerationCatalog>(`${generate}/catalog`)
   return data
 }
 

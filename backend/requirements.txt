@@ -41,6 +41,7 @@ httpx==0.25.2
 boto3==1.29.7
 
 # Utilities
+pyyaml==6.0.1  # schema sync script
 requests==2.31.0
 aiohttp==3.9.1
 python-jose[cryptography]==3.3.0

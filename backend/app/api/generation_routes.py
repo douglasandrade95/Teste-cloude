@@ -7,6 +7,7 @@ Generation takes minutes, so nothing here blocks on the provider.
 """
 
 import logging
+from typing import Dict, List
 
 from fastapi import APIRouter, HTTPException
 
@@ -14,10 +15,11 @@ from app.models.generation_schemas import (
     CreditsResponse,
     DownloadUrlRequest,
     DownloadUrlResponse,
+    FieldSpec,
     GenerateVideoRequest,
     GenerateVideoResponse,
-    GenerationCapabilities,
-    GenerationModelInfo,
+    GenerationCatalog,
+    ModelSpec,
     TaskStatusResponse,
 )
 from app.services.kie_client import (
@@ -60,39 +62,59 @@ def _translate(error: KieError) -> HTTPException:
     return HTTPException(status_code=status, detail=str(error))
 
 
-@router.get("/capabilities", response_model=GenerationCapabilities)
-async def get_capabilities():
-    """What can be generated right now, and with which options."""
-    credential = provider_service.describe_credential("kie")
-    kie = provider_service.get_provider("kie")
+@router.get("/catalog", response_model=GenerationCatalog)
+async def get_catalog():
+    """
+    The model catalog with each model's parameter schema.
 
-    models = []
-    for option in kie.models if kie else []:
-        implemented = option.id in video_models.SUPPORTED_MODELS
+    The UI builds its controls from this, so a model added to the catalog shows
+    up with the right fields without any frontend change.
+    """
+    credential = provider_service.describe_credential("kie")
+
+    models: List[ModelSpec] = []
+    categories: Dict[str, str] = {}
+
+    for model_id in video_models.supported_models():
+        model = video_models.get_model(model_id) or {}
+        required = set(model.get("required") or [])
+
+        fields = [
+            FieldSpec(
+                name=name,
+                type=spec.get("type", "string"),
+                item_type=spec.get("item_type"),
+                enum=spec.get("enum"),
+                default=spec.get("default"),
+                max_length=spec.get("max_length"),
+                max_items=spec.get("max_items"),
+                minimum=spec.get("minimum"),
+                maximum=spec.get("maximum"),
+                description=spec.get("description", ""),
+                required=name in required,
+            )
+            for name, spec in sorted((model.get("properties") or {}).items())
+        ]
+
+        category = model.get("category", "outros")
+        categories[category] = model.get("category_label", category)
+
         models.append(
-            GenerationModelInfo(
-                id=option.id,
-                label=option.label,
-                implemented=implemented,
-                durations=list(video_models.OMNI_DURATIONS) if implemented else [],
-                aspect_ratios=list(video_models.OMNI_ASPECT_RATIOS) if implemented else [],
-                resolutions=list(video_models.OMNI_RESOLUTIONS) if implemented else [],
-                notes=option.note
-                if implemented
-                else "Catalogado; a geração deste modelo ainda não foi implementada.",
+            ModelSpec(
+                id=model_id,
+                label=model.get("label", model_id),
+                category=category,
+                category_label=categories[category],
+                docs_url=model.get("docs_url", ""),
+                fields=fields,
+                constraints=model.get("constraints") or {},
             )
         )
 
-    return GenerationCapabilities(
+    return GenerationCatalog(
         configured=bool(credential["configured"]),
         models=models,
-        options={
-            "max_images": video_models.OMNI_MAX_IMAGES,
-            "max_videos": video_models.OMNI_MAX_VIDEOS,
-            "max_character_ids": video_models.OMNI_MAX_CHARACTER_IDS,
-            "total_slots": video_models.OMNI_TOTAL_SLOTS,
-            "max_clip_seconds": video_models.OMNI_MAX_CLIP_SECONDS,
-        },
+        categories=[{"id": key, "label": value} for key, value in sorted(categories.items())],
     )
 
 
@@ -118,22 +140,7 @@ async def generate_video(payload: GenerateVideoRequest):
     client = get_kie_client()
 
     try:
-        task_input = video_models.build_input(
-            payload.model,
-            prompt=payload.prompt,
-            duration=payload.duration,
-            aspect_ratio=payload.aspect_ratio,
-            resolution=payload.resolution,
-            image_urls=payload.image_urls,
-            first_frame_url=payload.first_frame_url,
-            last_frame_url=payload.last_frame_url,
-            audio_ids=payload.audio_ids,
-            video_list=[clip.model_dump() for clip in payload.video_list]
-            if payload.video_list
-            else None,
-            character_ids=payload.character_ids,
-            seed=payload.seed,
-        )
+        task_input = video_models.build_input(payload.model, payload.values)
     except VideoInputError as exc:
         # Caught before any request goes out, so a bad payload costs nothing.
         raise HTTPException(status_code=422, detail=str(exc)) from exc
