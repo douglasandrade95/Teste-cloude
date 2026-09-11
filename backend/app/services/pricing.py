@@ -11,6 +11,9 @@ page on kie.ai. Two shapes exist and they are not interchangeable:
 - **Per generation** (Gemini Omni): a flat price per duration/resolution pair,
   and a single flat price when a video is supplied, regardless of duration.
 - **Per image** (Seedream 4.5): one flat price per image.
+- **Per image, by quality** (Seedream 5 Pro): the price depends on the output
+  size the `quality` field selects — basic is 1K, high is 2K — and each input
+  image after the first adds a small charge.
 
 A model can also be catalogued with no published price at all (Seedream 5 at
 the time of writing). That is reported as unknown rather than guessed — the
@@ -50,6 +53,14 @@ def get_model_pricing(model_id: str) -> Optional[Dict[str, Any]]:
     return load_pricing().get("models", {}).get(model_id)
 
 
+def _schema_default(model_id: str, field: str) -> Optional[Any]:
+    """The default the model publishes for a field, if any."""
+    from app.services import video_models
+
+    model = video_models.get_model(model_id) or {}
+    return ((model.get("properties") or {}).get(field) or {}).get("default")
+
+
 def _has_video_input(values: Dict[str, Any]) -> bool:
     return any(values.get(field) for field in VIDEO_REFERENCE_FIELDS)
 
@@ -87,6 +98,41 @@ def estimate(model_id: str, values: Dict[str, Any]) -> Dict[str, Any]:
 
     if pricing["mode"] == "per_image":
         return _result(float(pricing["per_image"]), ["Preço fixo por imagem."], pricing)
+
+    if pricing["mode"] == "per_image_by_quality":
+        table = pricing["per_image"]
+        field = pricing.get("quality_field", "quality")
+        # An omitted field means the provider applies the schema's default, so
+        # fall back to it rather than reporting the cost as unknown.
+        quality = str(values.get(field) or _schema_default(model_id, field) or "")
+        credits = table.get(quality)
+        if credits is None:
+            return {
+                "available": False,
+                "reason": f"Sem preço para a qualidade '{quality or '—'}'.",
+                "credits": None,
+                "usd": None,
+                "assumptions": [],
+                "source_url": pricing.get("source_url"),
+            }
+
+        notes = [f"Qualidade '{quality}': {credits} créditos por imagem."]
+
+        # Input images beyond the free allowance add a per-image charge.
+        supplied = len(values.get("image_urls") or [])
+        free = int(pricing.get("free_input_images", 0))
+        billable = max(0, supplied - free)
+        if billable:
+            extra = billable * float(pricing.get("input_image_credits", 0))
+            credits = credits + extra
+            notes.append(
+                f"{supplied} imagens de entrada: a primeira é grátis, as outras "
+                f"{billable} somam {extra:g} créditos."
+            )
+        elif supplied:
+            notes.append("A primeira imagem de entrada não é cobrada.")
+
+        return _result(float(credits), notes, pricing)
 
     if pricing["mode"] == "per_generation":
         table = pricing["with_video"] if with_video else pricing["no_video"]
@@ -196,4 +242,6 @@ def rate_table(model_id: str) -> Dict[str, Any]:
         "no_video": pricing.get("no_video", {}),
         "with_video": pricing.get("with_video", {}),
         "per_image": pricing.get("per_image"),
+        "input_image_credits": pricing.get("input_image_credits"),
+        "free_input_images": pricing.get("free_input_images"),
     }

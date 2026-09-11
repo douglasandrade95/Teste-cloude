@@ -129,24 +129,38 @@
       "per_image": 6.5
     },
     "seedream/5-pro-text-to-image": {
-      "mode": "unpublished",
-      "source_url": "https://kie.ai/market",
-      "note": "A Kie.ai ainda não publicou o preço deste modelo. O custo real aparece no campo creditsConsumed quando a tarefa termina."
+      "mode": "per_image_by_quality",
+      "source_url": "https://kie.ai/seedream-5-0-pro",
+      "note": "Basic sai em 1K, High em 2K. Cerca de 20% abaixo do preço oficial.",
+      "quality_field": "quality",
+      "per_image": {
+        "basic": 7,
+        "high": 14
+      },
+      "input_image_credits": 0.5,
+      "free_input_images": 1
     },
     "seedream/5-lite-text-to-image": {
       "mode": "unpublished",
       "source_url": "https://kie.ai/market",
-      "note": "A Kie.ai ainda não publicou o preço deste modelo. O custo real aparece no campo creditsConsumed quando a tarefa termina."
+      "note": "A Kie.ai não publicou o preço do 5 Lite (o 5 Pro tem página, o Lite não). O custo real aparece em creditsConsumed quando a tarefa termina."
     },
     "seedream/5-pro-image-to-image": {
-      "mode": "unpublished",
-      "source_url": "https://kie.ai/market",
-      "note": "A Kie.ai ainda não publicou o preço deste modelo. O custo real aparece no campo creditsConsumed quando a tarefa termina."
+      "mode": "per_image_by_quality",
+      "source_url": "https://kie.ai/seedream-5-0-pro",
+      "note": "Basic sai em 1K, High em 2K. Cerca de 20% abaixo do preço oficial.",
+      "quality_field": "quality",
+      "per_image": {
+        "basic": 7,
+        "high": 14
+      },
+      "input_image_credits": 0.5,
+      "free_input_images": 1
     },
     "seedream/5-lite-image-to-image": {
       "mode": "unpublished",
       "source_url": "https://kie.ai/market",
-      "note": "A Kie.ai ainda não publicou o preço deste modelo. O custo real aparece no campo creditsConsumed quando a tarefa termina."
+      "note": "A Kie.ai não publicou o preço do 5 Lite (o 5 Pro tem página, o Lite não). O custo real aparece em creditsConsumed quando a tarefa termina."
     }
   }
 }
