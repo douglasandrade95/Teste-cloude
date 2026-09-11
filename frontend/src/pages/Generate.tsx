@@ -9,6 +9,7 @@ import {
   errorMessage,
   fetchCapabilities,
   fetchCredits,
+  fetchDownloadUrl,
   fetchTask,
   generateVideo,
 } from '../services/api'
@@ -310,6 +311,50 @@ function OptionGroup({
   )
 }
 
+function ResultVideo({ url }: { url: string }) {
+  const [fetching, setFetching] = useState(false)
+
+  /**
+   * Kie.ai download links live ~20 minutes, so mint one on click rather than
+   * on render — a link created when the video appeared would be dead by the
+   * time someone came back to save it.
+   */
+  const handleDownload = async () => {
+    setFetching(true)
+    try {
+      const link = await fetchDownloadUrl(url)
+      window.open(link, '_blank', 'noopener,noreferrer')
+    } catch (error) {
+      toast.error(errorMessage(error, 'Não consegui gerar o link de download.'))
+    } finally {
+      setFetching(false)
+    }
+  }
+
+  return (
+    <div className="mb-4 space-y-3">
+      <video
+        src={url}
+        controls
+        playsInline
+        className="w-full rounded-xl border border-white/10 bg-black"
+      />
+      <button
+        onClick={handleDownload}
+        disabled={fetching}
+        className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-4 py-2.5 text-xs uppercase tracking-widest text-bone-200 transition hover:border-gold-400/60 hover:text-gold-200 disabled:opacity-40"
+      >
+        {fetching ? (
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        ) : (
+          <Download className="h-3.5 w-3.5" />
+        )}
+        Baixar o vídeo
+      </button>
+    </div>
+  )
+}
+
 function TaskPanel({ task }: { task: TaskStatus }) {
   const pct = Math.max(0, Math.min(100, Math.round(task.progress)))
 
@@ -345,23 +390,7 @@ function TaskPanel({ task }: { task: TaskStatus }) {
       )}
 
       {task.result_urls.map((url) => (
-        <div key={url} className="mb-4 space-y-3">
-          <video
-            src={url}
-            controls
-            playsInline
-            className="w-full rounded-xl border border-white/10 bg-black"
-          />
-          <a
-            href={url}
-            target="_blank"
-            rel="noreferrer noopener"
-            className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-4 py-2.5 text-xs uppercase tracking-widest text-bone-200 transition hover:border-gold-400/60 hover:text-gold-200"
-          >
-            <Download className="h-3.5 w-3.5" />
-            Abrir o arquivo
-          </a>
-        </div>
+        <ResultVideo key={url} url={url} />
       ))}
 
       {task.finished && (

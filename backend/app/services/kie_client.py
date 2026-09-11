@@ -34,6 +34,21 @@ BASE_URL = "https://api.kie.ai"
 CREATE_TASK_PATH = "/api/v1/jobs/createTask"
 TASK_DETAIL_PATH = "/api/v1/jobs/recordInfo"
 CREDIT_PATH = "/api/v1/chat/credit"
+DOWNLOAD_URL_PATH = "/api/v1/common/download-url"
+
+# Download links minted by DOWNLOAD_URL_PATH are short-lived.
+DOWNLOAD_LINK_TTL_MINUTES = 20
+
+# Status codes the provider returns inside the body, per their docs.
+ERROR_MESSAGES = {
+    402: "Sua conta na Kie.ai está sem créditos.",
+    404: "A Kie.ai não encontrou esse recurso.",
+    422: "A Kie.ai recusou os parâmetros enviados.",
+    429: "Limite de requisições da Kie.ai atingido. Tente em instantes.",
+    455: "A Kie.ai está em manutenção. Tente mais tarde.",
+    500: "A Kie.ai teve um erro interno.",
+    505: "Esse recurso está desativado na Kie.ai.",
+}
 
 REQUEST_TIMEOUT_SECONDS = 60.0
 
@@ -160,8 +175,16 @@ class KieClient:
     # Response handling
     # ------------------------------------------------------------------
     @staticmethod
-    def _unwrap(response: httpx.Response) -> Dict[str, Any]:
-        """Read the envelope, raising on the body's own error code."""
+    def _unwrap(response: httpx.Response) -> Any:
+        """
+        Read the envelope, raising on the body's own error code, and return the
+        raw ``data`` value.
+
+        ``data`` is not always an object: createTask and recordInfo return one,
+        while the credit and download-url endpoints return a bare number and a
+        bare string. Coercing everything to a dict here would silently drop
+        those, so callers get the raw value and check the shape they expect.
+        """
         try:
             payload = response.json()
         except ValueError as exc:
@@ -178,27 +201,22 @@ class KieClient:
                 "A Kie.ai recusou a chave. Gere uma nova em kie.ai/api-key.", code=401
             )
 
-        if code == 402:
-            raise KieError("Sua conta na Kie.ai está sem créditos.", code=402)
-
-        if code == 429:
-            raise KieError("Limite de requisições da Kie.ai atingido. Tente em instantes.", code=429)
-
         if code not in (200, 0, None):
             detail = str(payload.get("msg") or payload.get("message") or "").strip()
+            base = ERROR_MESSAGES.get(
+                code, f"A Kie.ai recusou a requisição (código {code})."
+            )
             raise KieError(
-                f"A Kie.ai recusou a requisição (código {code})."
-                + (f" {detail}" if detail else ""),
+                f"{base} {detail}".strip() if detail else base,
                 code=code if isinstance(code, int) else None,
             )
 
         if response.status_code >= 400:
             raise KieError(f"A Kie.ai respondeu HTTP {response.status_code}.")
 
-        data = payload.get("data")
-        return data if isinstance(data, dict) else {}
+        return payload.get("data")
 
-    async def _request(self, method: str, path: str, **kwargs) -> Dict[str, Any]:
+    async def _request(self, method: str, path: str, **kwargs) -> Any:
         url = f"{self.base_url}{path}"
         try:
             async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT_SECONDS) as client:
@@ -215,26 +233,8 @@ class KieClient:
     # ------------------------------------------------------------------
     async def get_credits(self) -> float:
         """Remaining credits on the account. Also doubles as a key check."""
-        url = f"{self.base_url}{CREDIT_PATH}"
-        try:
-            async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT_SECONDS) as client:
-                response = await client.get(url, headers=self._headers)
-        except httpx.HTTPError as exc:
-            raise KieError("Não consegui alcançar a Kie.ai.") from exc
-
-        # This endpoint returns the number directly in `data`, not an object.
-        try:
-            payload = response.json()
-        except ValueError as exc:
-            raise KieError("A Kie.ai respondeu em formato inesperado.") from exc
-
-        code = payload.get("code") if isinstance(payload, dict) else None
-        if code in (401, 403):
-            raise KieAuthError("A Kie.ai recusou a chave.", code=401)
-        if code not in (200, 0, None):
-            raise KieError(f"A Kie.ai respondeu com o código {code}.", code=code)
-
-        return _as_float(payload.get("data"), 0.0)
+        # `data` is a bare number here, not an object.
+        return _as_float(await self._request("GET", CREDIT_PATH), 0.0)
 
     async def create_task(
         self,
@@ -248,7 +248,7 @@ class KieClient:
             body["callBackUrl"] = callback_url
 
         data = await self._request("POST", CREATE_TASK_PATH, json=body)
-        task_id = data.get("taskId")
+        task_id = data.get("taskId") if isinstance(data, dict) else None
         if not task_id:
             raise KieError("A Kie.ai aceitou o pedido mas não devolveu um taskId.")
 
@@ -258,9 +258,32 @@ class KieClient:
     async def get_task(self, task_id: str) -> KieTask:
         """Current state of a job."""
         data = await self._request("GET", TASK_DETAIL_PATH, params={"taskId": task_id})
-        if not data:
+        if not isinstance(data, dict) or not data:
             raise KieError(f"A Kie.ai não conhece a tarefa '{task_id}'.")
         return KieTask.from_payload(data)
+
+    async def get_download_url(self, file_url: str) -> str:
+        """
+        Turn a generated file URL into a downloadable link.
+
+        The URLs in ``resultJson`` are for viewing; this mints a link that
+        actually downloads. It expires after 20 minutes, so fetch it when the
+        user asks to save, never at render time.
+
+        Only accepts URLs produced by Kie.ai — anything else is a 422.
+        """
+        file_url = (file_url or "").strip()
+        if not file_url:
+            raise KieError("Informe a URL do arquivo gerado.")
+
+        data = await self._request("POST", DOWNLOAD_URL_PATH, json={"url": file_url})
+
+        # `data` is the link itself, a bare string.
+        link = data if isinstance(data, str) else (data or {}).get("url")
+        if not link:
+            raise KieError("A Kie.ai não devolveu um link de download.")
+
+        return str(link)
 
     async def wait_for_task(
         self,

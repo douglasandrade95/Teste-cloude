@@ -60,6 +60,17 @@ class TaskStatusResponse(BaseModel):
     fail_message: str = ""
 
 
+class DownloadUrlRequest(BaseModel):
+    url: str = Field(..., description="A result URL produced by Kie.ai")
+
+
+class DownloadUrlResponse(BaseModel):
+    download_url: str
+    expires_in_minutes: int = Field(
+        ..., description="The link stops working after this long"
+    )
+
+
 class CreditsResponse(BaseModel):
     credits: float
     provider: str = "kie"

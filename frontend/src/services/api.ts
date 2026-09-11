@@ -210,6 +210,17 @@ export async function generateVideo(
   return data
 }
 
+/**
+ * Mint a fresh download link. The provider's links expire after ~20 minutes,
+ * so call this on click, never when the result is first rendered.
+ */
+export async function fetchDownloadUrl(url: string): Promise<string> {
+  const { data } = await api.post<{ download_url: string }>(`${generate}/download-url`, {
+    url,
+  })
+  return data.download_url
+}
+
 export async function fetchTask(taskId: string): Promise<TaskStatus> {
   const { data } = await api.get<TaskStatus>(`${generate}/task/${taskId}`)
   return data

@@ -12,13 +12,20 @@ from fastapi import APIRouter, HTTPException
 
 from app.models.generation_schemas import (
     CreditsResponse,
+    DownloadUrlRequest,
+    DownloadUrlResponse,
     GenerateVideoRequest,
     GenerateVideoResponse,
     GenerationCapabilities,
     GenerationModelInfo,
     TaskStatusResponse,
 )
-from app.services.kie_client import KieAuthError, KieClient, KieError
+from app.services.kie_client import (
+    DOWNLOAD_LINK_TTL_MINUTES,
+    KieAuthError,
+    KieClient,
+    KieError,
+)
 from app.services import providers as provider_service
 from app.services import video_models
 from app.services.video_models import VideoInputError
@@ -142,6 +149,26 @@ async def generate_video(payload: GenerateVideoRequest):
         task_id=task_id,
         model=payload.model,
         message="Geração na fila. Consulte o status pelo taskId.",
+    )
+
+
+@router.post("/download-url", response_model=DownloadUrlResponse)
+async def get_download_url(payload: DownloadUrlRequest):
+    """
+    Mint a download link for a generated file.
+
+    The URLs in a finished task are for viewing; this returns one that actually
+    downloads. It expires quickly, so call it when the user clicks save rather
+    than when the result is rendered.
+    """
+    client = get_kie_client()
+    try:
+        link = await client.get_download_url(payload.url)
+    except KieError as exc:
+        raise _translate(exc) from exc
+
+    return DownloadUrlResponse(
+        download_url=link, expires_in_minutes=DOWNLOAD_LINK_TTL_MINUTES
     )
 
 
