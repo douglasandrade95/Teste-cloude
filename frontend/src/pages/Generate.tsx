@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 
 import {
+  CostEstimate,
   FieldSpec,
   ModelSpec,
   TaskStatus,
@@ -19,6 +20,7 @@ import {
   fetchCatalog,
   fetchCredits,
   fetchDownloadUrl,
+  fetchEstimate,
   fetchTask,
   generateVideo,
 } from '../services/api'
@@ -79,6 +81,7 @@ export function Generate() {
   const [category, setCategory] = useState<string>('todos')
 
   const [credits, setCredits] = useState<number | null>(null)
+  const [estimate, setEstimate] = useState<CostEstimate | null>(null)
   const [task, setTask] = useState<TaskStatus | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const pollRef = useRef<number | null>(null)
@@ -136,6 +139,31 @@ export function Generate() {
   }, [loadCredits, selectModel])
 
   useEffect(() => stopPolling, [stopPolling])
+
+  /**
+   * Keep a live cost estimate as the form changes. Debounced because typing in
+   * the prompt fires on every keystroke, and cancelled on change so a slow
+   * response cannot overwrite a newer one.
+   */
+  useEffect(() => {
+    if (!selected) return
+    let cancelled = false
+
+    const timer = window.setTimeout(() => {
+      fetchEstimate(selected.id, values)
+        .then((result) => {
+          if (!cancelled) setEstimate(result)
+        })
+        .catch(() => {
+          if (!cancelled) setEstimate(null)
+        })
+    }, 300)
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [selected, values])
 
   const visibleModels = useMemo(() => {
     const term = search.trim().toLowerCase()
@@ -360,6 +388,8 @@ export function Generate() {
                     )}
                     {working ? 'Gerando…' : 'Gerar vídeo'}
                   </button>
+
+                  <CostPanel estimate={estimate} credits={credits} />
                 </div>
               ) : (
                 <p className="text-bone-300">Selecione um modelo.</p>
@@ -370,6 +400,67 @@ export function Generate() {
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+/** Live cost of the current settings, and what it leaves in the balance. */
+function CostPanel({
+  estimate,
+  credits,
+}: {
+  estimate: CostEstimate | null
+  credits: number | null
+}) {
+  if (!estimate) return null
+
+  if (!estimate.available) {
+    return (
+      <p className="mt-5 flex items-start gap-2 text-xs leading-relaxed text-bone-300">
+        <Coins className="mt-0.5 h-3.5 w-3.5 shrink-0 text-bone-300" />
+        {estimate.reason}
+      </p>
+    )
+  }
+
+  const short = credits !== null && estimate.credits !== null && credits < estimate.credits
+  const left =
+    credits !== null && estimate.credits !== null ? credits - estimate.credits : null
+
+  return (
+    <div
+      className={`mt-5 rounded-xl border px-5 py-4 ${
+        short
+          ? 'border-red-400/30 bg-red-400/[0.06]'
+          : 'border-gold-400/25 bg-gold-400/[0.05]'
+      }`}
+    >
+      <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
+        <span className="text-sm text-bone-100">
+          <strong className="font-medium tabular-nums text-gold-200">
+            {estimate.credits}
+          </strong>{' '}
+          créditos
+        </span>
+        <span className="text-sm tabular-nums text-bone-300">
+          ≈ US$ {estimate.usd?.toFixed(3)}
+        </span>
+        {left !== null && (
+          <span className="text-xs tabular-nums text-bone-300">
+            {short ? 'Saldo insuficiente' : `Sobram ${left.toFixed(0)} créditos`}
+          </span>
+        )}
+      </div>
+
+      {estimate.assumptions.length > 0 && (
+        <ul className="mt-3 space-y-1">
+          {estimate.assumptions.map((note) => (
+            <li key={note} className="text-[11px] leading-relaxed text-bone-300/80">
+              {note}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }

@@ -192,12 +192,23 @@ export interface ModelSpec {
   docs_url: string
   fields: FieldSpec[]
   constraints: Record<string, unknown>
+  pricing: Record<string, unknown>
 }
 
 export interface GenerationCatalog {
   configured: boolean
   models: ModelSpec[]
   categories: { id: string; label: string }[]
+  credit_usd: number
+}
+
+export interface CostEstimate {
+  available: boolean
+  reason: string
+  credits: number | null
+  usd: number | null
+  assumptions: string[]
+  source_url: string | null
 }
 
 export interface TaskStatus {
@@ -220,6 +231,15 @@ export interface GenerateVideoParams {
 
 export async function fetchCatalog(): Promise<GenerationCatalog> {
   const { data } = await api.get<GenerationCatalog>(`${generate}/catalog`)
+  return data
+}
+
+/** What a generation would cost. Reads the rate table; needs no API key. */
+export async function fetchEstimate(
+  model: string,
+  values: Record<string, unknown>
+): Promise<CostEstimate> {
+  const { data } = await api.post<CostEstimate>(`${generate}/estimate`, { model, values })
   return data
 }
 

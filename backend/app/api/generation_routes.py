@@ -12,9 +12,11 @@ from typing import Dict, List
 from fastapi import APIRouter, HTTPException
 
 from app.models.generation_schemas import (
+    CostEstimate,
     CreditsResponse,
     DownloadUrlRequest,
     DownloadUrlResponse,
+    EstimateRequest,
     FieldSpec,
     GenerateVideoRequest,
     GenerateVideoResponse,
@@ -28,6 +30,7 @@ from app.services.kie_client import (
     KieClient,
     KieError,
 )
+from app.services import pricing as pricing_service
 from app.services import providers as provider_service
 from app.services import video_models
 from app.services.video_models import VideoInputError
@@ -108,6 +111,7 @@ async def get_catalog():
                 docs_url=model.get("docs_url", ""),
                 fields=fields,
                 constraints=model.get("constraints") or {},
+                pricing=pricing_service.rate_table(model_id),
             )
         )
 
@@ -115,7 +119,18 @@ async def get_catalog():
         configured=bool(credential["configured"]),
         models=models,
         categories=[{"id": key, "label": value} for key, value in sorted(categories.items())],
+        credit_usd=pricing_service.credit_usd(),
     )
+
+
+@router.post("/estimate", response_model=CostEstimate)
+async def estimate_cost(payload: EstimateRequest):
+    """
+    What one generation would cost, before spending anything.
+
+    Needs no API key: it reads the published rate table, not the account.
+    """
+    return CostEstimate(**pricing_service.estimate(payload.model, payload.values))
 
 
 @router.get("/credits", response_model=CreditsResponse)

@@ -29,12 +29,30 @@ class ModelSpec(BaseModel):
     docs_url: str = ""
     fields: List[FieldSpec] = []
     constraints: Dict[str, Any] = {}
+    pricing: Dict[str, Any] = Field(
+        default_factory=dict, description="Published rates, for showing a price list"
+    )
+
+
+class CostEstimate(BaseModel):
+    available: bool
+    reason: str = ""
+    credits: Optional[float] = None
+    usd: Optional[float] = None
+    assumptions: List[str] = []
+    source_url: Optional[str] = None
+
+
+class EstimateRequest(BaseModel):
+    model: str
+    values: Dict[str, Any] = Field(default_factory=dict)
 
 
 class GenerationCatalog(BaseModel):
     configured: bool
     models: List[ModelSpec]
     categories: List[Dict[str, str]] = []
+    credit_usd: float = 0.005
 
 
 class GenerateVideoRequest(BaseModel):
